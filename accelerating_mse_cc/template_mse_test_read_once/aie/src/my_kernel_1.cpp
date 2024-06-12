@@ -22,11 +22,13 @@ inline aie::vector<func_type,vector_size> convert_to_func_type(aie::vector<read_
 
 void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream<read_type>* restrict input_2, output_stream<write_type>* restrict output) {
     
-    float test = 2;
-    writeincr(output, (write_type) test);
     
-    /*aie::vector<read_type, vector_size> size_vec1 = readincr_v<vector_size>(input_1);
+    aie::vector<read_type, vector_size> size_vec1 = readincr_v<vector_size>(input_1);
     aie::vector<read_type, vector_size> size_vec2 = readincr_v<vector_size>(input_2);
+
+    writeincr(output, (write_type) size_vec1.get(0));
+
+    /*
     
     if(aie::equal(size_vec1, size_vec2)){
         printf("\n\nThe two images have the same size\n\n");

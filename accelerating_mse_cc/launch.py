@@ -16,10 +16,10 @@ elif sys.argv[1] == "simulate_x86":
 elif sys.argv[1] == "simulate_VLIW":
     os.system(f"cd template_{sys.argv[2]} && cd aie && make clean && make aie_compile && make aie_simulate && cd .. && cd ..")
 
-elif sys.argv[1] == "complile_hw_emu":
+elif sys.argv[1] == "compile_hw_emu":
     os.system(f"cd template_{sys.argv[2]} && make clean && make build_hw TARGET=hw_emu && cd ..")
 
-elif sys.argv[1] == "complile_hw":
+elif sys.argv[1] == "compile_hw":
     os.system(f"cd template_{sys.argv[2]} && make clean && make build_hw TARGET=hw && cd ..")
 
 elif sys.argv[1] == "run_hw_emu":
