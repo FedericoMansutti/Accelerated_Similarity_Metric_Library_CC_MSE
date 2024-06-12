@@ -26,7 +26,7 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
     aie::vector<read_type, vector_size> size_vec1 = readincr_v<vector_size>(input_1);
     aie::vector<read_type, vector_size> size_vec2 = readincr_v<vector_size>(input_2);
 
-    writeincr(output, (write_type) size_vec1[0]);
+    writeincr(output, (write_type) size_vec1.get(0));
 
     /*
     
