@@ -4,6 +4,15 @@ import sys
 if sys.argv[1] == "clean_all":
     os.system("cd template_mse && make clean && cd ../template_ncc && make clean && cd ../template_bst && make clean && cd ../template_hd && make clean && cd ../template_psnr && make clean && cd ../_template_original && make clean && cd ..")
 
+if sys.argv[1] == "source_nag":
+    os.system("source ./setup_all.sh")
+
+if sys.argv[1] == "source_hacc":
+    os.system("source /opt/xilinx/xrt/setup.sh")
+
+if sys.argv[1] == "source_eth":
+    os.system("source /opt/sgrt/cli/enable/vitis && source /opt/sgrt/cli/enable/vivado && source /opt/sgrt/cli/enable/xrt")
+
 if len(sys.argv) != 3:
     sys.exit("\n\nCommand not valid\n")
 
@@ -16,17 +25,17 @@ elif sys.argv[1] == "simulate_x86":
 elif sys.argv[1] == "simulate_VLIW":
     os.system(f"cd template_{sys.argv[2]} && cd aie && make clean && make aie_compile && make aie_simulate && cd .. && cd ..")
 
-elif sys.argv[1] == "complile_hw_emu":
+elif sys.argv[1] == "compile_hw_emu":
     os.system(f"cd template_{sys.argv[2]} && make clean && make build_hw TARGET=hw_emu && cd ..")
 
-elif sys.argv[1] == "complile_hw":
+elif sys.argv[1] == "compile_hw":
     os.system(f"cd template_{sys.argv[2]} && make clean && make build_hw TARGET=hw && cd ..")
 
 elif sys.argv[1] == "run_hw_emu":
-    os.system(f"cd template_{sys.argv[2]} && make build_sw && cd sw && chmod u+x ./setup_emu.sh && source ./setup_emu.sh -s on && ./setup_emu.sh -s on && ./host_overlay.exe && cd .. && cd ..")
+    os.system(f"cd template_{sys.argv[2]} && cd sw && make clean && cd .. && make build_sw && cd sw && chmod u+x ./setup_emu.sh && source ./setup_emu.sh -s on && ./setup_emu.sh -s on && ./host_overlay.exe && cd .. && cd ..")
 
 elif sys.argv[1] == "run_hw":
-    os.system(f"cd template_{sys.argv[2]} && make build_sw && cd sw && chmod u+x ./host_overlay.exe && ./host_overlay.exe && cd .. && cd ..")
+    os.system(f"cd template_{sys.argv[2]} && cd sw && make clean && cd .. && make build_sw && cd sw && chmod u+x ./host_overlay.exe && ./host_overlay.exe && cd .. && cd ..")
 
 elif sys.argv[1] == "clean":
     os.system(f"cd template_{sys.argv[2]} && make clean && cd ..")
