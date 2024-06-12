@@ -1,17 +1,10 @@
 import os
 import sys
+import subprocess
 
 if sys.argv[1] == "clean_all":
     os.system("cd template_mse && make clean && cd ../template_ncc && make clean && cd ../template_bst && make clean && cd ../template_hd && make clean && cd ../template_psnr && make clean && cd ../_template_original && make clean && cd ..")
-
-if sys.argv[1] == "source_nag":
-    os.system("source ./setup_all.sh")
-
-if sys.argv[1] == "source_hacc":
-    os.system("source /opt/xilinx/xrt/setup.sh")
-
-if sys.argv[1] == "source_eth":
-    os.system("source /opt/sgrt/cli/enable/vitis && source /opt/sgrt/cli/enable/vivado && source /opt/sgrt/cli/enable/xrt")
+    sys.exit("\n")
 
 if len(sys.argv) != 3:
     sys.exit("\n\nCommand not valid\n")
