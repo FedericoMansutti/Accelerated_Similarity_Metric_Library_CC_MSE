@@ -1,0 +1,18 @@
+#-----------------------------------------------------------
+# Vitis Analyzer v2022.2.2 (64-bit)
+# SW Build 3788238 on Tue Feb 21 19:59:23 MST 2023
+# 
+# Start of session at: Fri May 24 08:03:25 2024
+# Process ID: 1298966
+# Current directory: /home/users/davide.ettori/Desktop/HPPS/template_mse
+# Command line: vitis_analyzer /home/users/davide.ettori/Desktop/HPPS/template_mse/hw/overlay_hw_emu.xclbin.package_summary
+# Log file: /home/users/davide.ettori/Desktop/HPPS/template_mse/vitis_analyzer.log
+# Journal file: /home/users/davide.ettori/Desktop/HPPS/template_mse/vitis_analyzer.jou
+# Running On: nags27, OS: Linux, CPU Frequency: 1200.000 MHz, CPU Physical cores: 20, Host memory: 405693 MB
+#-----------------------------------------------------------
+start_gui
+xterm: Xt error: Can't open display: 
+xterm: DISPLAY is not set
+ERROR: [Common 17-1374] Display test failed. Please check DISPLAY environment variable and X server permissions for remote display.
+quit
+INFO: [Common 17-206] Exiting vitis_analyzer at Fri May 24 08:03:37 2024...
