@@ -105,6 +105,7 @@ int main(int argc, char *argv[]) {
     int size2 = 128;
     int depth1 = 10;
     int depth2 = 10;
+    int output_size = 4;
 
     size1 = size1 * depth1;
     size2 = size2 * depth2;
@@ -136,7 +137,7 @@ int main(int argc, char *argv[]) {
     // create device buffers - if you have to load some data, here they are
     xrt::bo buffer_setup_aie_1 = xrt::bo(device, size1 * sizeof(int), xrt::bo::flags::normal, bank_input_1);
     xrt::bo buffer_setup_aie_2 = xrt::bo(device, size2 * sizeof(int), xrt::bo::flags::normal, bank_input_2); 
-    xrt::bo buffer_sink_from_aie = xrt::bo(device, sizeof(float), xrt::bo::flags::normal, bank_output); 
+    xrt::bo buffer_sink_from_aie = xrt::bo(device, output_size * sizeof(float), xrt::bo::flags::normal, bank_output); 
 
     // create runner instances
     xrt::run run_setup_aie = xrt::run(krnl_setup_aie);
@@ -150,7 +151,9 @@ int main(int argc, char *argv[]) {
 
     // set sink_from_aie kernel arguments
     run_sink_from_aie.set_arg(arg_sink_from_aie_output, buffer_sink_from_aie);
-    run_sink_from_aie.set_arg(arg_sink_from_aie_size, 1);
+    run_sink_from_aie.set_arg(arg_sink_from_aie_size, output_size);
+
+    float output_buffer[output_size];
 
     int num_tests = 5;
     float mean = 0;
@@ -186,8 +189,8 @@ int main(int argc, char *argv[]) {
 
         // read the output buffer
         buffer_sink_from_aie.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-        float output_buffer[1];
         buffer_sink_from_aie.read(output_buffer);
+
         std::cout << "\nTest number " << j + 1 << ", HW Time taken: " << time.count() << " ms --> ";
         if (check_result(img_ref, img_float, output_buffer, size2) == EXIT_FAILURE)
             res = EXIT_FAILURE;
