@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
     interleave_images(size, nums1, nums2, interleaved_image);
 
     int input_size = size * 2;
-    int output_size = size * 2;
+    int output_size = 1;
 
 
 
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 
     // create device buffers - if you have to load some data, here they are
     xrt::bo buffer_setup_aie= xrt::bo(device, input_size * sizeof(uint8_t), xrt::bo::flags::normal, bank_input); 
-    xrt::bo buffer_sink_from_aie = xrt::bo(device, output_size * sizeof(uint8_t), xrt::bo::flags::normal, bank_output); 
+    xrt::bo buffer_sink_from_aie = xrt::bo(device, output_size * sizeof(float), xrt::bo::flags::normal, bank_output); 
 
     // create runner instances
     xrt::run run_setup_aie   = xrt::run(krnl_setup_aie);
@@ -143,14 +143,16 @@ int main(int argc, char *argv[]) {
 
     // read the output buffer
     buffer_sink_from_aie.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-    uint8_t output_buffer[output_size];
+    float output_buffer[output_size];
     buffer_sink_from_aie.read(output_buffer);
 
     // ---------------------------------CONFRONTO PER VERIFICARE L'ERRORE--------------------------------------
         
     // Here there should be a code for checking correctness of your application, like a software application
     delete[] interleaved_image;
-    return checkResult(nums1, output_buffer, size);
+    std::cout << output_buffer[0] << std::endl;
+
+    return 0;
     }
 
 
