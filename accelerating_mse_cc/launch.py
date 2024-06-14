@@ -1,9 +1,13 @@
 import os
 import sys
-import subprocess
 
 if sys.argv[1] == "clean_all":
-    os.system("cd template_mse && make clean && cd ../template_ncc && make clean && cd ../template_bst && make clean && cd ../template_hd && make clean && cd ../template_psnr && make clean && cd ../_template_original && make clean && cd ..")
+    current_path = os.getcwd()
+    folders = [f for f in os.listdir(current_path) if os.path.isdir(os.path.join(current_path, f))]
+    command = str()
+    for folder in folders:
+        command += (f"cd {folder} && make clean && cd .. && ")
+    os.system(command[:-3])
     sys.exit("\n")
 
 if len(sys.argv) != 3:
