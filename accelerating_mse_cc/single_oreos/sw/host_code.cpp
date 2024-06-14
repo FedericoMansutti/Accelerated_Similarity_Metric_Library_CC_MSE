@@ -62,7 +62,7 @@ int checkResult(uint8_t* input, uint8_t* output, int size) {
     std::cout << "Test passed!" << std::endl;
     return EXIT_SUCCESS;
 }
-
+/*
 void interleave_images(int size, uint8_t *img1, uint8_t *img2, uint8_t *interleaved_image){
     size /= 16;
     for (int i = 0; i < size; i++){
@@ -72,21 +72,21 @@ void interleave_images(int size, uint8_t *img1, uint8_t *img2, uint8_t *interlea
         }
     }
 }
-
+*/
 int main(int argc, char *argv[]) {
     
     int32_t size = 128*128;
 
     uint8_t nums1[size];
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < 2* size; i++)
         nums1[i] = 2;
 
-    uint8_t nums2[size];
+    /*uint8_t nums2[size];
     for (int i = 0; i < size; i++)
         nums2[i] = 3;
     
     uint8_t *interleaved_image = new uint8_t[size * 2];
-    interleave_images(size, nums1, nums2, interleaved_image);
+    interleave_images(size, nums1, nums2, interleaved_image);*/
 
     int input_size = size * 2;
     int output_size = 1;

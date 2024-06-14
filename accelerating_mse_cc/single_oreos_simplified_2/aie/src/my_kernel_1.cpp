@@ -22,6 +22,44 @@ void my_kernel_function (input_stream<uint8_t>* restrict input, output_stream<fl
     // read from one stream and write to another
     // read 4 vector uint8_t from input stream and write to output stream
     aie::vector<uint8_t,16> x = readincr_v<16>(input);
+
+
+    int tot_num = 0;
+    int shifted = 0;
+    for (int i = 0; i < 4; i++)
+    {
+
+        printf("x[%d]: %d\n", i, (int)x[i]);
+        shifted = (int)x[i];
+        tot_num|=shifted<<(8*i);
+    }
+
+    printf("tot_num: %d\n", tot_num);
+    int loop_count = tot_num/2;
+
+    for (int i = 0; i < loop_count; i++)
+    {
+        aie::vector<func_type,16> x1 = convert_to_func_type(readincr_v<16>(input)); // 1 Float = 32 bit. 32 x 4 = 128 bit -> 128-bit wide stream operation.
+        sum = sum + aie::reduce_add(x1);
+    }
+
+    for (int i = 0; i < loop_count; i++)
+    {
+        aie::vector<func_type,16> x2 = convert_to_func_type(readincr_v<16>(input)); // 1 Float = 32 bit. 32 x 4 = 128 bit -> 128-bit wide stream operation.
+        sum = sum + aie::reduce_add(x2);
+    }
+
+    aie::vector<func_type,4> summation = aie::zeros<func_type, 4>();
+    summation[0]=sum;  
+
+    writeincr(output, sum);
+}
+/*
+void my_kernel_function (input_stream<uint8_t>* restrict input, output_stream<float>* restrict output)
+{
+    // read from one stream and write to another
+    // read 4 vector uint8_t from input stream and write to output stream
+    aie::vector<uint8_t,16> x = readincr_v<16>(input);
     aie::vector<func_type,4> sum = aie::zeros<func_type, 4>();  
 
 
@@ -51,4 +89,4 @@ void my_kernel_function (input_stream<uint8_t>* restrict input, output_stream<fl
     }
 
     writeincr(output, sum);
-}
+}*/
