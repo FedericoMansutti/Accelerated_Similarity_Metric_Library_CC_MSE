@@ -36,10 +36,10 @@ int main(int argc, char *argv[]) {
     // and will write it into memory
 
     // I will create a stream of data
-    hls::stream<int32_t> s;
-    int size = 32;
+    hls::stream<uint8_t> s;
+    int size = 128*128;
     // I create the buffer to write into memory
-    int *buffer = new int[size];
+    uint8_t *buffer = new uint8_t[size];
 
     // I have to read the output of AI Engine from the file. 
     // Otherwise, I have no input for my testbench
@@ -51,9 +51,14 @@ int main(int argc, char *argv[]) {
     }
 
     for (int i = 0; i < size; i++) {
-        int x;
+        if (i%5 == 0) {
+        i-=1;
+        }else{
+        uint8_t x;
         file >> x;
         s.write(x);
+        printf("x[%d]: %d\n", i, (int)x);
+        }
     }
 
     sink_from_aie(s,buffer,size);
@@ -61,7 +66,7 @@ int main(int argc, char *argv[]) {
     // if the kernel is correct, it will contains the expected data.
     // I can print them, for example, to check that they are equal to the output of AIE
     for (unsigned int i = 0; i < size; i++) {
-        std::cout << buffer[i] << std::endl;
+        std::cout << (int)buffer[i] << std::endl;
     }
     delete[] buffer;
 

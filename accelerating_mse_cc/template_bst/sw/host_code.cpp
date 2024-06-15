@@ -32,6 +32,7 @@ SOFTWARE.
 #include "experimental/xrt_uuid.h"
 #include "../common/common.h"
 #include <ctime>
+#include <math.h>
 
 // For hw emulation, run in sw directory: source ./setup_emu.sh -s on
 
@@ -80,7 +81,7 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
     float bst = (float) (num) / (denom);
     end = std::chrono::high_resolution_clock::now();
     time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    std::cout << "SW Time Taken: " << time.count() << " ms, ";
+    std::cout << "SW Time Taken: " << time.count() << " ns, ";
     if (abs(bst - output[0]) >= 0.01){
         std::cout << "Error for BST --> expected: " << bst << " got:  " << output[0] << std::endl;
         return EXIT_FAILURE;
@@ -154,10 +155,10 @@ int main(int argc, char *argv[]) {
     std::chrono::nanoseconds time;
     for (int j = 0; j < num_tests; j++){
         for (int i = 0; i < size1; i++){
-            img_ref[i] = rand() % max_pixel_value; 
+            img_ref[i] = rand() % max_pixel_value_1; 
         }
         for (int i = 0; i < size2; i++){
-            img_float[i] = rand() % max_pixel_value; 
+            img_float[i] = rand() % max_pixel_value_2; 
         }
         // write data into the input buffer
         buffer_setup_aie_1.write(img_ref);

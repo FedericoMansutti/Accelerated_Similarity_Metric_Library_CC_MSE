@@ -29,10 +29,11 @@ SOFTWARE.
 #include <ap_axi_sdata.h>
 #include "../common/common.h"
 
-
+#define VEC_SIZE 16
+#define BITWIDTH sizeof(uint8_t) * 8 * VEC_SIZE
 extern "C" {
 
-void setup_aie(int32_t size, int32_t* input, hls::stream<ap_int<sizeof(int32_t) * 8 * 4>>& s) {
+void setup_aie(int32_t size, uint8_t* input, hls::stream<ap_uint<BITWIDTH>>& s) {
 
 	#pragma HLS interface m_axi port=input depth=100 offset=slave bundle=gmem0
 	#pragma HLS interface axis port=s
@@ -42,19 +43,29 @@ void setup_aie(int32_t size, int32_t* input, hls::stream<ap_int<sizeof(int32_t) 
 
 	// size represents the number of elements. But the AI Engine uses the number of loops, and each
 	// loop uses 4 elements. So we need to convert the number of elements to the number of loops.
-	int32_t size_loop = size/4;
-	ap_int<sizeof(int32_t)*8*4> tmp;
-	tmp.range(31,0) = size_loop;
-	tmp.range(63,32) = 0;
-	tmp.range(95,64) = 0;
-	tmp.range(127,96) = 0;
-	s.write(tmp);
+	int32_t size_loop = size/VEC_SIZE;
 
+	ap_uint<BITWIDTH> tmp;
+	tmp.range(31,0) = size_loop;
+	s.write(tmp);
+	
 	for (int j = 0; j < size_loop; j++) {
-		tmp.range(31,0) = input[j*4+0];
-		tmp.range(63,32) = input[j*4+1];
-		tmp.range(95,64) = input[j*4+2];
-		tmp.range(127,96) = input[j*4+3];
+		tmp.range(7,0) = input[j];
+		tmp.range(15,8) = input[j+1];
+		tmp.range(23,16) = input[j+2];
+		tmp.range(31,24) = input[j+3];
+		tmp.range(39,32) = input[j+4];
+		tmp.range(47,40) = input[j+5];
+		tmp.range(55,48) = input[j+6];
+		tmp.range(63,56) = input[j+7];
+		tmp.range(71,64) = input[j+8];
+		tmp.range(79,72) = input[j+9];
+		tmp.range(87,80) = input[j+10];
+		tmp.range(95,88) = input[j+11];
+		tmp.range(103,96) = input[j+12];
+		tmp.range(111,104) = input[j+13];
+		tmp.range(119,112) = input[j+14];
+		tmp.range(127,120) = input[j+15];
 		s.write(tmp);
 	}
 }

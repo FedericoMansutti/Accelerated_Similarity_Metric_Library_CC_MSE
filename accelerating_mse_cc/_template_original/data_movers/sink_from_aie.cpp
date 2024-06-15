@@ -28,14 +28,17 @@ SOFTWARE.
 #include <ap_axi_sdata.h>
 #include "../common/common.h"
 
+#define VEC_SIZE 16
+#define BITWIDTH sizeof(uint8_t) * 8 * VEC_SIZE
+
 extern "C" {
 // We need 1 input stream, from AIE
 // We need 1 write what the AIE sends to the PL, into memory
 // We need 1 input from host
 
 void sink_from_aie(
-    hls::stream<int32_t>& input_stream, 
-    int32_t* output, 
+    hls::stream<uint8_t>& input_stream, 
+    uint8_t* output, 
     int size)
 {
 

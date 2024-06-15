@@ -30,6 +30,7 @@ SOFTWARE.
 #include "../setup_aie.cpp"
 #include <iostream>
 
+
 void read_from_stream(float *buffer, hls::stream<float> &stream, size_t size) {
     for (unsigned int i = 0; i < size; i++) {
         buffer[i] = stream.read();
@@ -39,11 +40,11 @@ void read_from_stream(float *buffer, hls::stream<float> &stream, size_t size) {
 int main(int argc, char* argv[]) {
     // In a testbench, you will use you kernel as a C function
     // You will need to create the input and output of your function
-    hls::stream<ap_int<sizeof(float)*8*4>> s;
-    int size = 32;
-    int *input = new int[32];
+    hls::stream<ap_uint<BITWIDTH>> s;
+    int size = 128*128;
+    uint8_t *input = new uint8_t[size];
     for (unsigned int i = 0; i < size; i++) {
-        input[i] = i;
+        input[i] = 2;
     }
     setup_aie(size, input, s);
 
@@ -62,16 +63,18 @@ int main(int argc, char* argv[]) {
     std::ofstream file;
     file.open("../../aie/data/in_plio_source_1.txt");
     if (file.is_open()) {
-        // read the stream of ap_int
-        ap_int<sizeof(int) * 8 * 4> tmp;
-        for (unsigned int i = 0; i < (size/4)+1; i++) {
+        // read the stream of ap_uint
+        ap_uint<BITWIDTH> tmp;
+        for (unsigned int i = 0; i < (size/16)+1; i++) {
             tmp = s.read();
-            for (unsigned int j = 0; j < 4; j++) {
-                float val = tmp.range(31 + j * 32, j * 32);
-                file << val << std::endl;
-                std::cout<<val<<std::endl;
+            for (unsigned int i = 0; i < 16; i++) {
+                int val = tmp.range((i+1)*8-1, i*8);
+                file << val << " ";
             }
+        file <<std::endl;
+
         }
+
     } else {
         std::cout << "Error opening file" << std::endl;
     }

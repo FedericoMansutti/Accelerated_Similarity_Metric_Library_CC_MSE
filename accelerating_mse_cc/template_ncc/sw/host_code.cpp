@@ -32,6 +32,7 @@ SOFTWARE.
 #include "experimental/xrt_uuid.h"
 #include "../common/common.h"
 #include <ctime>
+#include <math.h>
 
 // For hw emulation, run in sw directory: source ./setup_emu.sh -s on
 
@@ -83,7 +84,7 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
     cc = (num * num) / (denom_1 * denom_2);
     end = std::chrono::high_resolution_clock::now();
     time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    std::cout << "SW Time Taken: " << time.count() << " ms, ";
+    std::cout << "SW Time Taken: " << time.count() << " ns, ";
     if (abs(cc - output[0]) >= 0.01){
         std::cout << "Error for CC --> expected: " << cc << " got:  " << output[0] << std::endl;
         return EXIT_FAILURE;

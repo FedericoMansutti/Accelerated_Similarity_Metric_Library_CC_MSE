@@ -7,15 +7,27 @@
 //API REFERENCE for STREAM: 
 // https://docs.amd.com/r/ehttps://docs.amd.com/r/en-US/ug1079-ai-engine-kernel-coding/Reading-and-Advancing-an-Input-Streamn-US/ug1079-ai-engine-kernel-coding/Reading-and-Advancing-an-Input-Stream
 
-void my_kernel_function (input_stream<int32_t>* restrict input, output_stream<int32_t>* restrict output)
+void my_kernel_function (input_stream<uint8_t>* restrict input, output_stream<uint8_t>* restrict output)
 {
     // read from one stream and write to another
-    aie::vector<int32_t,4> x= readincr_v4(input); // the first number tells me how many loops I have to perform
-    int tot_num = x[0];
-    printf("Value of tot_num: %d\n", tot_num);
+    // read 4 vector uint8_t from input stream and write to output stream
+    aie::vector<uint8_t,16> x = readincr_v<16>(input); // 4 uint8_t = 32 bit -> 32-bit wide stream operation.
+
+    int tot_num = 0;
+    int shifted = 0;
+    for (int i = 0; i < 4; i++)
+    {
+
+        printf("x[%d]: %d\n", i, (int)x[i]);
+        shifted = (int)x[i];
+        tot_num|=shifted<<(8*i);
+    }
+
+    printf("tot_num: %d\n", tot_num);
+
     for (int i = 0; i < tot_num; i++)
     {
-        aie::vector<int32_t,4> x = readincr_v<4>(input); // 1 Float = 32 bit. 32 x 4 = 128 bit -> 128-bit wide stream operation.
+        aie::vector<uint8_t,16> x = readincr_v<16>(input); // 1 Float = 32 bit. 32 x 4 = 128 bit -> 128-bit wide stream operation.
         writeincr(output,x);
     }   
 }

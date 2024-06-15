@@ -73,7 +73,7 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
     psnr = (float) 10 * log2((int) (max * max / mse)) / log2((int) 10);
     end = std::chrono::high_resolution_clock::now();
     time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    std::cout << "SW Time Taken: " << time.count() << " ms, ";
+    std::cout << "SW Time Taken: " << time.count() << " ns, ";
     if (abs(psnr - output[0]) / psnr >= -log10(0.01)){
         std::cout << "Error for PSNR --> expected: " << psnr << " got:  " << output[0] << std::endl;
         return EXIT_FAILURE;

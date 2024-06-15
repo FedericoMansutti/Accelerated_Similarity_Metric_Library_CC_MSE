@@ -54,7 +54,7 @@ public:
 		// II argument: the type of the PLIO that will be read/written. Test both plio_32_bits and plio_128_bits to verify the difference
 		// III argument: the path to the file that will be read/written for simulation
 
-		in_1 = input_plio::create("in_plio_1", plio_32_bits, "data/in_plio_source_1.txt");
+		in_1 = input_plio::create("in_plio_1", plio_128_bits, "data/in_plio_source_1.txt");
 		out_1 = output_plio::create("out_plio_1", plio_32_bits, "data/out_plio_sink_1.txt");
 
 		// ------kernel connection------
