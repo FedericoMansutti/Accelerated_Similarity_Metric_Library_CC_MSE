@@ -70,7 +70,7 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
             max = input_2[i];
     }
     mse = (float) sum / size;
-    psnr = (float) 10 * log2((int) (max * max / mse)) / log2((int) 10);
+    float psnr = (float) 10 * log2((int) (max * max / mse)) / log2((int) 10);
     end = std::chrono::high_resolution_clock::now();
     time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
     std::cout << "SW Time Taken: " << time.count() << " ns, ";

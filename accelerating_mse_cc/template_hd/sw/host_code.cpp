@@ -71,7 +71,7 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
     time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
     std::cout << "SW Time Taken: " << time.count() << " ns, ";
     if (abs(sum - output[0]) > 0.01){
-        std::cout << "Error for HD --> expected: " << mse << " got:  " << output[0] << std::endl;
+        std::cout << "Error for HD --> expected: " << sum << " got:  " << output[0] << std::endl;
         return EXIT_FAILURE;
     }
     std::cout << "Test passed!" << std::endl << std::endl;
