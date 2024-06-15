@@ -55,6 +55,7 @@ SOFTWARE.
 #include "experimental/xrt_kernel.h"
 #include "experimental/xrt_uuid.h"
 #include "../common/common.h"
+#include <math.h>
 
 // For hw emulation, run in sw directory: source ./setup_emu.sh -s on
 
@@ -81,7 +82,7 @@ std::ostream& bold_off(std::ostream& os);
 
 int check_result(int* input_1, int* input_2, float* output, int size) {
     std::chrono::high_resolution_clock::time_point start, end;
-    std::chrono::milliseconds time;
+    std::chrono::nanoseconds time;
     start = std::chrono::high_resolution_clock::now();
     int sum = 0;
     float mse;
@@ -90,8 +91,8 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
     }
     mse = (float) sum / size;
     end = std::chrono::high_resolution_clock::now();
-    time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "SW Time Taken: " << time.count() << " ms, ";
+    time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+    std::cout << "SW Time Taken: " << time.count() << " ns, ";
     if (abs(mse - output[0]) / mse > 0.01){
         std::cout << "Error for MSE --> expected: " << mse << " got:  " << output[0] << std::endl;
         return EXIT_FAILURE;
@@ -101,8 +102,8 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
 }
 
 int main(int argc, char *argv[]) {
-    int size1 = 128;
-    int size2 = 128;
+    int size1 = 16 * 1000;
+    int size2 = 16 * 1000;
     int depth1 = 10;
     int depth2 = 10;
     int output_size = 4;
@@ -155,11 +156,14 @@ int main(int argc, char *argv[]) {
 
     float output_buffer[output_size];
 
-    int num_tests = 5;
-    float mean = 0;
+    int num_tests = 100;
+    float sum_hw = 0;
+    float sum_squared_hw = 0;
+    float sum_sw = 0;
+    float sum_squared_sw = 0;
     int res = EXIT_SUCCESS;
     std::chrono::high_resolution_clock::time_point start, end;
-    std::chrono::milliseconds time;
+    std::chrono::nanoseconds time;
     for (int j = 0; j < num_tests; j++){
         for (int i = 0; i < size1; i++){
             img_ref[i] = rand() % max_pixel_value; 
@@ -184,19 +188,32 @@ int main(int argc, char *argv[]) {
         run_sink_from_aie.wait();
         end = std::chrono::high_resolution_clock::now();
 
-        time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        mean += time.count();
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        sum_hw += time.count() / 1000; // convert to microseconds 
+        sum_squared_hw += time.count() * time.count() / 1000000;
 
         // read the output buffer
         buffer_sink_from_aie.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
         buffer_sink_from_aie.read(output_buffer);
 
-        std::cout << "\nTest number " << j + 1 << ", HW Time taken: " << time.count() << " ms --> ";
+        start = std::chrono::high_resolution_clock::now();
+        std::cout << "\nTest number " << j + 1 << ", HW Time taken: " << time.count() << " ns --> ";
         if (check_result(img_ref, img_float, output_buffer, size2) == EXIT_FAILURE)
             res = EXIT_FAILURE;
-    }
+        end = std::chrono::high_resolution_clock::now();
 
-    std::cout << "\nMean execution time --> " << (float) mean / num_tests << " ms\n\n";
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        sum_sw += time.count() / 1000; // convert to microseconds 
+        sum_squared_sw += time.count() * time.count() / 1000000;
+    }
+    // compute the variance as Var(X) = E(X ** 2) - E(X) ** 2
+    std::cout << "\nResults on " << num_tests << " tests: ";
+    std::cout << "\n\nMean HW time: " << sum_hw / num_tests << " microseconds, HW Standard Deviation: " << sqrt((sum_squared_hw / num_tests) - (sum_hw / num_tests) * (sum_hw / num_tests)) << "\n";
+    std::cout << "Mean SW time: " << sum_sw / num_tests << " microseconds, SW Standard Deviation: " << sqrt((sum_squared_sw / num_tests) - (sum_sw / num_tests) * (sum_sw / num_tests)) << "\n";
+    std::cout << "\nSpeedUp factor: " << (sum_sw / num_tests) / (sum_hw / num_tests) << "\n";
+    std::cout << "\nF-ratio: " << sqrt((sum_squared_sw / num_tests) - (sum_sw / num_tests) * (sum_sw / num_tests)) / sqrt((sum_squared_hw / num_tests) - (sum_hw / num_tests) * (sum_hw / num_tests)) << "\n\n";
+
+
 
     // ---------------------------------CONFRONTO PER VERIFICARE L'ERRORE--------------------------------------
         
