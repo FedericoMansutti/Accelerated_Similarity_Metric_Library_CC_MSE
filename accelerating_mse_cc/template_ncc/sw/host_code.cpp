@@ -65,7 +65,7 @@ int integer_mean(int size, int *arr){
 
 int check_result(int* input_1, int* input_2, float* output, int size) {
     std::chrono::high_resolution_clock::time_point start, end;
-    std::chrono::milliseconds time;
+    std::chrono::nanoseconds time;
     start = std::chrono::high_resolution_clock::now();
     unsigned long long int num = 0;
     unsigned long long int denom_1 = 0;
@@ -82,7 +82,7 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
     }
     cc = (num * num) / (denom_1 * denom_2);
     end = std::chrono::high_resolution_clock::now();
-    time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
     std::cout << "SW Time Taken: " << time.count() << " ms, ";
     if (abs(cc - output[0]) >= 0.01){
         std::cout << "Error for CC --> expected: " << cc << " got:  " << output[0] << std::endl;
@@ -93,10 +93,11 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
 }
 
 int main(int argc, char *argv[]) {
-    int size1 = 128;
-    int size2 = 128;
+    int size1 = 16 * 1000;
+    int size2 = 16 * 1000;
     int depth1 = 10;
     int depth2 = 10;
+    int output_size = 4;
 
     size1 = size1 * depth1;
     size2 = size2 * depth2;
@@ -128,7 +129,7 @@ int main(int argc, char *argv[]) {
     // create device buffers - if you have to load some data, here they are
     xrt::bo buffer_setup_aie_1 = xrt::bo(device, size1 * sizeof(int), xrt::bo::flags::normal, bank_input_1);
     xrt::bo buffer_setup_aie_2 = xrt::bo(device, size2 * sizeof(int), xrt::bo::flags::normal, bank_input_2); 
-    xrt::bo buffer_sink_from_aie = xrt::bo(device, sizeof(float), xrt::bo::flags::normal, bank_output); 
+    xrt::bo buffer_sink_from_aie = xrt::bo(device, output_size * sizeof(float), xrt::bo::flags::normal, bank_output); 
 
     // create runner instances
     xrt::run run_setup_aie = xrt::run(krnl_setup_aie);
@@ -142,13 +143,18 @@ int main(int argc, char *argv[]) {
 
     // set sink_from_aie kernel arguments
     run_sink_from_aie.set_arg(arg_sink_from_aie_output, buffer_sink_from_aie);
-    run_sink_from_aie.set_arg(arg_sink_from_aie_size, 1);
+    run_sink_from_aie.set_arg(arg_sink_from_aie_size, output_size);
 
-    int num_tests = 5;
-    float mean = 0;
+    float output_buffer[output_size];
+
+    int num_tests = 100;
+    float sum_hw = 0;
+    float sum_squared_hw = 0;
+    float sum_sw = 0;
+    float sum_squared_sw = 0;
     int res = EXIT_SUCCESS;
     std::chrono::high_resolution_clock::time_point start, end;
-    std::chrono::milliseconds time;
+    std::chrono::nanoseconds time;
     for (int j = 0; j < num_tests; j++){
         for (int i = 0; i < size1; i++){
             img_ref[i] = rand() % max_pixel_value; 
@@ -173,19 +179,32 @@ int main(int argc, char *argv[]) {
         run_sink_from_aie.wait();
         end = std::chrono::high_resolution_clock::now();
 
-        time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        mean += time.count();
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        sum_hw += time.count() / 1000; // convert to microseconds 
+        sum_squared_hw += time.count() * time.count() / 1000000;
 
         // read the output buffer
         buffer_sink_from_aie.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-        float output_buffer[1];
         buffer_sink_from_aie.read(output_buffer);
-        std::cout << "\nTest number " << j + 1 << ", Time taken: " << time.count() << " ms --> ";
+
+        start = std::chrono::high_resolution_clock::now();
+        std::cout << "\nTest number " << j + 1 << ", HW Time taken: " << time.count() << " ns --> ";
         if (check_result(img_ref, img_float, output_buffer, size2) == EXIT_FAILURE)
             res = EXIT_FAILURE;
-    }
+        end = std::chrono::high_resolution_clock::now();
 
-    std::cout << "\nMean execution time --> " << (float) mean / num_tests << " ms\n\n";
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        sum_sw += time.count() / 1000; // convert to microseconds 
+        sum_squared_sw += time.count() * time.count() / 1000000;
+    }
+    // compute the variance as Var(X) = E(X ** 2) - E(X) ** 2
+    std::cout << "\nResults on " << num_tests << " tests: ";
+    std::cout << "\n\nMean HW time: " << sum_hw / num_tests << " microseconds, HW Standard Deviation: " << sqrt((sum_squared_hw / num_tests) - (sum_hw / num_tests) * (sum_hw / num_tests)) << "\n";
+    std::cout << "Mean SW time: " << sum_sw / num_tests << " microseconds, SW Standard Deviation: " << sqrt((sum_squared_sw / num_tests) - (sum_sw / num_tests) * (sum_sw / num_tests)) << "\n";
+    std::cout << "\nSpeedUp factor: " << (sum_sw / num_tests) / (sum_hw / num_tests) << "\n";
+    std::cout << "\nF-ratio: " << sqrt((sum_squared_sw / num_tests) - (sum_sw / num_tests) * (sum_sw / num_tests)) / sqrt((sum_squared_hw / num_tests) - (sum_hw / num_tests) * (sum_hw / num_tests)) << "\n\n";
+
+
 
     // ---------------------------------CONFRONTO PER VERIFICARE L'ERRORE--------------------------------------
         

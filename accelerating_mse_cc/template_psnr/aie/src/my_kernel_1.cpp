@@ -74,5 +74,8 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
         final_sum += aie::reduce_add(partial_sums[i]); // "reduce" phase of map-reduce, combining all the partial sums
     }
     float mse = final_sum / size1;
-    writeincr(output, (write_type) 10 * aie::detail::utils::log2((int) (max * max / mse)) / aie::detail::utils::log2((int) 10)); // divide and write to get the real MSE
+    write_type res = (write_type) 10 * aie::detail::utils::log2((int) (max * max / mse)) / aie::detail::utils::log2((int) 10);
+    aie::vector<write_type, 4> psnr;
+    psnr.set(res, 0);
+    writeincr(output, psnr); // divide and write to get the real MSE
 }

@@ -96,6 +96,8 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
         final_denom_1 += aie::reduce_add(partial_denom_1[i]);
         final_denom_2 += aie::reduce_add(partial_denom_2[i]);
     }
-
-    writeincr(output, (write_type) (final_num * final_num) / (final_denom_1 * final_denom_2));
+    write_type res = (write_type) (final_num * final_num) / (final_denom_1 * final_denom_2);
+    aie::vector<write_type, 4> ncc;
+    ncc.set(res, 0);
+    writeincr(output, ncc);
 }

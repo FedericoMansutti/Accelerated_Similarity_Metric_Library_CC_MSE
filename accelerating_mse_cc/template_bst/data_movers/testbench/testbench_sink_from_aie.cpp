@@ -30,7 +30,7 @@ SOFTWARE.
 #include <cmath>
 
 #define read_size 16 // size of each line of the file (number of pixel)
-#define output_size 1 // size of the output we write to the output file (number of values)
+#define output_size 4 // size of the output we write to the output file (number of values)
 
 float bst(int size, float *img_ref, float *img_float, int mean_1){
     unsigned long long int num = 0;
@@ -118,15 +118,15 @@ int main(int argc, char *argv[]) {
     // I can print them, for example, to check that they are equal to the output of AIE
     std::cout << std::endl << std::endl;
     bool error = false;
-    for (unsigned int i = 0; i < output_size; i++) {
-        if (abs(buffer[i] - real_values[i]) >= 0.01){
-            error = true;
-            std::cout << "value of bst is wrong, iteration number: " << i << " --> got " << buffer[i] << " expected " << real_values[i] << std::endl;
-        }
-        else{
-            std::cout << "value of bst is right, iteration number: " << i << ", value = " << buffer[i] << std::endl;
-        }
+
+    if (abs(buffer[0] - real_values[0]) >= 0.01){
+        error = true;
+        std::cout << "value of bst is wrong, iteration number: " << 0 << " --> got " << buffer[0] << " expected " << real_values[0] << std::endl;
     }
+    else{
+        std::cout << "value of bst is right, iteration number: " << 0 << ", value = " << buffer[0] << std::endl;
+    }
+    
     if(!error){
         std::cout << "Test Passed!" << std::endl;
     }
