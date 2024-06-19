@@ -21,9 +21,9 @@ inline aie::vector<func_type,vector_size> convert_to_func_type(aie::vector<read_
 }
 
 void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream<read_type>* restrict input_2, output_stream<write_type>* restrict output) {
-    aie::vector<read_type, vector_size> size_vec1 = readincr_v<vector_size>(input_1);
-    aie::vector<read_type, vector_size> size_vec2 = readincr_v<vector_size>(input_2);
-    
+    aie::vector<read_type, vector_size/2> size_vec1 = readincr_v<vector_size/2>(input_1);
+    aie::vector<read_type, vector_size/2> size_vec2 = readincr_v<vector_size/2>(input_2);
+
     if(aie::equal(size_vec1, size_vec2)){
         printf("\n\nThe two images have the same size\n\n");
     }
@@ -35,7 +35,7 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
     unsigned int size1 = 0;
     unsigned int multiplier = 1;
     int first_zero = 0;
-    for (int i = vector_size - 1; i >= 0; i--){
+    for (int i = vector_size/2 - 1; i >= 0; i--){
         if (size_vec1[i] != 0){
             first_zero = i;
             break;
@@ -47,13 +47,14 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
     }
 
     if (size1 % vector_size != 0) 
-        printf("\n\nWarning: The number of pixel is not divisible by 16, the image will be truncated...\n");
+        printf("\n\nWarning: The number of pixel is not divisible by 32, the image will be truncated...\n");
 
     unsigned long long int partial_sums[num_partitions] = {0};
 
     aie::vector<func_type, vector_size> diff;
     // Process each vector with partial accumulators
-    for (int i = 0; i < size1 / vector_size; i++) 
+    int loop_count = size1 / vector_size;
+    for (int i = 0; i < loop_count; i++) 
     chess_loop_range(4, )
     chess_prepare_for_pipelining
     {
