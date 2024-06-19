@@ -48,15 +48,24 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
 
     if (size1 % vector_size != 0) printf("\n\nWarning: The number of pixel is not divisible by 16, the image will be truncated...\n");
 
+    func_type coeff1 = (func_type) readincr_v<vector_size / 2>(input_1)[0];
+    func_type coeff2 = (func_type) readincr_v<vector_size / 2>(input_2)[0];
+
     unsigned long long int partial_sums[num_partitions] = {0}; // init partial sums which contains the "map" phase of map-reduce pattern
 
-
     // Process each vector with partial accumulators
+    aie::vector<func_type, vector_size> vec_1;
+    aie::vector<func_type, vector_size> vec_2;
+    aie::vector<func_type, vector_size> zeros = aie::zeros<func_type, vector_size>();
+    aie::vector<func_type, vector_size> ones = aie::add(zeros, 1);
     for (int i = 0; i < size1 / vector_size; i++) 
     chess_loop_range(4, )
     chess_prepare_for_pipelining
     {
-        partial_sums[i % num_partitions] += aie::reduce_add(aie::abs(aie::add(convert_to_func_type(readincr_v<vector_size>(input_1)), aie::neg(convert_to_func_type(readincr_v<vector_size>(input_2))))));
+        vec_1 = aie::select(zeros, ones, aie::ge(convert_to_func_type(readincr_v<vector_size>(input_1)), coeff1));
+        vec_2 = aie::select(zeros, ones, aie::ge(convert_to_func_type(readincr_v<vector_size>(input_2)), coeff2));
+
+        partial_sums[i % num_partitions] += aie::reduce_add(aie::abs(aie::add(vec_1, aie::neg(vec_2))));
     }
     unsigned long long int hd = 0; // final sum for the MSE
     for (int i = 0; i < num_partitions; i++) 

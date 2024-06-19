@@ -32,10 +32,10 @@ SOFTWARE.
 #define read_size 16 // size of each line of the file (number of pixel)
 #define output_size 4 // size of the output we write to the output file (number of values)
 
-float hd(int size, float *img_ref, float *img_float){
+float hd(int size, float *img_ref, float *img_float, int coeff1, int coeff2){
     float tot = 0.0;
     for (int i = 0; i < size; i++){
-        if (img_float[i] != img_ref[i])
+        if ((int) img_ref[i] / coeff1 != (int) img_float[i] / coeff2)
             tot++;
     }
     return tot / size;
@@ -70,6 +70,16 @@ int main(int argc, char *argv[]) {
         input_size2 += multiplier * temp;
         multiplier *= 10;
     }
+
+    int coeff1, coeff2;
+    file_in_1 >> coeff1;
+    file_in_2 >> coeff2;
+
+    for (int i = 1; i < read_size; i++){
+        file_in_1 >> temp;
+        file_in_2 >> temp;
+    }
+    
     // I create the buffer to write into memory
     float *buffer = new float[output_size];
     float *real_values = new float[output_size];
@@ -100,7 +110,7 @@ int main(int argc, char *argv[]) {
         file_in_2 >> img_float[i];
     } 
 
-    real_values[0] = hd(input_size2, img_ref, img_float);
+    real_values[0] = hd(input_size2, img_ref, img_float, coeff1, coeff2);
    
 
     // if the kernel is correct, it will contains the expected data.

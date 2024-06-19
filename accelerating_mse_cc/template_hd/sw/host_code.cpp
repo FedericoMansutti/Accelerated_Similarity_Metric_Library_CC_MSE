@@ -60,6 +60,24 @@ bool get_xclbin_path(std::string& xclbin_file);
 std::ostream& bold_on(std::ostream& os);
 std::ostream& bold_off(std::ostream& os);
 
+int get_coefficent(int *arr, int size){
+	int max = 0;
+	for (int i = 0; i < size; i++){
+		if (arr[i] > size)
+			max = arr[i];
+	}
+	return (max + 1) / 2;
+}
+
+int get_max(int *arr, int size){
+	int max = 0;
+	for (int i = 0; i < size; i++){
+		if (arr[i] > size)
+			max = arr[i];
+	}
+	return max;
+}
+
 int check_result(int* input_1, int* input_2, float* output, int size) {
     std::chrono::high_resolution_clock::time_point start, end;
     std::chrono::nanoseconds time;
@@ -83,20 +101,11 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
     return EXIT_SUCCESS;
 }
 
-int get_coefficent(int *arr, int size){
-	int max = 0;
-	for (int i = 0; i < size; i++){
-		if (arr[i] > size)
-			max = arr[i];
-	}
-	return (max + 1) / 2;
-}
-
 int main(int argc, char *argv[]) {
-    int size1 = 16 * 1000;
-    int size2 = 16 * 1000;
-    int depth1 = 10;
-    int depth2 = 10;
+    int size1 = 512;
+    int size2 = 512;
+    int depth1 = 2;
+    int depth2 = 2;
     int output_size = 4;
 
     size1 = size1 * depth1;
@@ -163,8 +172,8 @@ int main(int argc, char *argv[]) {
             img_float[i] = rand() % max_pixel_value_2; 
         }
 
-        run_setup_aie.set_arg(arg_setup_aie_coeff1, get_coefficent(img_ref, size1));
-        run_setup_aie.set_arg(arg_setup_aie_coeff2, get_coefficent(img_float, size2));
+        run_setup_aie.set_arg(arg_setup_aie_coeff1, get_max(img_ref, size1));
+        run_setup_aie.set_arg(arg_setup_aie_coeff2, get_max(img_float, size2));
         // write data into the input buffer
         buffer_setup_aie_1.write(img_ref);
         buffer_setup_aie_1.sync(XCL_BO_SYNC_BO_TO_DEVICE);
