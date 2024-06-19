@@ -160,7 +160,6 @@ void setup_aie(int size1, int size2, hls::burst_maxi<ap_uint<128>> input_1, hls:
 		input_2.read_request(start, burst_length);
 		for (int j = 0; j < burst_length; j++){
 			#pragma HLS PIPELINE UNROLL
-			std::cout << "burst number:" << start << std::endl;
 			buf_1[j] = input_1.read();
 			buf_2[j] = input_2.read();
 		}
@@ -177,7 +176,6 @@ void setup_aie(int size1, int size2, hls::burst_maxi<ap_uint<128>> input_1, hls:
 	input_2.read_request(start, remainder);
 	for (int j = 0; j < remainder; j++){
 		#pragma HLS PIPELINE UNROLL
-		std::cout << "burst number:" << start << std::endl;
 		buf_1[j] = input_1.read();
 		buf_2[j] = input_2.read();
 	}
