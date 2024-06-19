@@ -51,21 +51,23 @@ SOFTWARE.
 #include <ap_int.h>
 #include <hls_stream.h>
 #include <ap_axi_sdata.h>
+#include "hls_burst_maxi.h"
 
 #define vector_type int
 #define pixel_type unsigned char
 #define stream_type ap_uint<128>
 #define read_size 16
+#define burst_length 64
 
 extern "C" {
 
-void setup_aie(int size1, int size2, stream_type* input_1, stream_type* input_2,  hls::stream<stream_type>& s_1, hls::stream<stream_type>& s_2) {
+void setup_aie(int size1, int size2, hls::burst_maxi<ap_uint<128>> input_1, hls::burst_maxi<ap_uint<128>> input_2,  hls::stream<stream_type>& s_1, hls::stream<stream_type>& s_2) {
 
-	#pragma HLS interface m_axi port=input_1 depth=128 offset=slave bundle=gmem0
+	#pragma HLS interface m_axi port=input_1 offset=slave bundle=gmem0 max_read_burst_length=256 //256 int = 64 ap uint<128>
 	#pragma HLS interface axis port=s_1
 	#pragma HLS interface s_axilite port=input_1 bundle=control
 
-	#pragma HLS interface m_axi port=input_2 depth=128 offset=slave bundle=gmem0
+	#pragma HLS interface m_axi port=input_2 offset=slave bundle=gmem0 max_read_burst_length=256
 	#pragma HLS interface axis port=s_2
 	#pragma HLS interface s_axilite port=input_2 bundle=control
 
@@ -142,16 +144,45 @@ void setup_aie(int size1, int size2, stream_type* input_1, stream_type* input_2,
 	s_2.write((stream_type) ap_2);
 
 
-	stream_type buf_1[2];
-	stream_type buf_2[2];
+	stream_type buf_1[burst_length];
+	stream_type buf_2[burst_length];
+	int ap_count = size1 / read_size;
+	int burst_count = ap_count / (burst_length);
+	int remainder = ap_count % burst_length;
+	int start = 0;
 
-	//read
-	for (int j = 0; j < 2; j++){
-		buf_1[j] = input_1[j];
-		buf_2[j] = input_2[j];
+	for (int i = 0; i < burst_count; i++){
+		#pragma HLS PIPELINE II=1
+
+		start = i * burst_length;
+		//read burst!
+		input_1.read_request(start, burst_length);
+		input_2.read_request(start, burst_length);
+		for (int j = 0; j < burst_length; j++){
+			#pragma HLS PIPELINE UNROLL
+			std::cout << "burst number:" << start << std::endl;
+			buf_1[j] = input_1.read();
+			buf_2[j] = input_2.read();
+		}
+
+		for (int j = 0; j < burst_length; j++){
+			s_1.write((stream_type) buf_1[j]);
+			s_2.write((stream_type) buf_2[j]);
+
+		}
+
+	}
+	start = burst_length * burst_count;
+	input_1.read_request(start, remainder);
+	input_2.read_request(start, remainder);
+	for (int j = 0; j < remainder; j++){
+		#pragma HLS PIPELINE UNROLL
+		std::cout << "burst number:" << start << std::endl;
+		buf_1[j] = input_1.read();
+		buf_2[j] = input_2.read();
 	}
 
-	for (int j = 0; j< 2; j++){
+	for (int j = 0; j < remainder; j++){
 		s_1.write((stream_type) buf_1[j]);
 		s_2.write((stream_type) buf_2[j]);
 

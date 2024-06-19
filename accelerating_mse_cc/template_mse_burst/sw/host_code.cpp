@@ -55,7 +55,6 @@ SOFTWARE.
 #include "experimental/xrt_kernel.h"
 #include "experimental/xrt_uuid.h"
 #include "../common/common.h"
-#include <ap_int.h>
 
 // For hw emulation, run in sw directory: source ./setup_emu.sh -s on
 
@@ -75,9 +74,6 @@ SOFTWARE.
 #define arg_sink_from_aie_size 2
 
 #define max_pixel_value 256
-#define stream_type ap_uint<128>
-#define read_size 16
-#define write_type uint8_t
 
 bool get_xclbin_path(std::string& xclbin_file);
 std::ostream& bold_on(std::ostream& os);
@@ -90,7 +86,7 @@ int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
     int sum = 0;
     float mse;
     for (int i = 0; i < size; i++){
-        sum += (int) (input_1[i] - input_2[i]) * (input_1[i] - input_2[i]);
+        sum += int(input_1[i] - input_2[i]) * int(input_1[i] - input_2[i]);
     }
     mse = (float) sum / size;
     end = std::chrono::high_resolution_clock::now();
@@ -105,18 +101,17 @@ int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
 }
 
 int main(int argc, char *argv[]) {
-    int size1 = 160;
-    int size2 = 160;
-    int depth1 = 10;
-    int depth2 = 10;
+    int size1 = 272;
+    int size2 = 272;
+    int depth1 = 1;
+    int depth2 = 1;
     int output_size = 4;
 
     size1 = size1 * depth1;
     size2 = size2 * depth2;
-    int ap_count = size1/read_size;
 
-    stream_type img_ref[ap_count];
-    stream_type img_float[ap_count];
+    uint8_t* img_ref = new uint8_t[size1];
+    uint8_t* img_float = new uint8_t[size1];
 
 //------------------------------------------------LOADING XCLBIN------------------------------------------    
     std::string xclbin_file;
@@ -140,8 +135,8 @@ int main(int argc, char *argv[]) {
     xrtMemoryGroup bank_input_2  = krnl_setup_aie.group_id(arg_setup_aie_input_2);
 
     // create device buffers - if you have to load some data, here they are
-    xrt::bo buffer_setup_aie_1 = xrt::bo(device, ap_count * sizeof(stream_type), xrt::bo::flags::normal, bank_input_1);
-    xrt::bo buffer_setup_aie_2 = xrt::bo(device, ap_count * sizeof(stream_type), xrt::bo::flags::normal, bank_input_2); 
+    xrt::bo buffer_setup_aie_1 = xrt::bo(device, size1 * sizeof(uint8_t), xrt::bo::flags::normal, bank_input_1);
+    xrt::bo buffer_setup_aie_2 = xrt::bo(device, size2 * sizeof(uint8_t), xrt::bo::flags::normal, bank_input_2); 
     xrt::bo buffer_sink_from_aie = xrt::bo(device, output_size * sizeof(float), xrt::bo::flags::normal, bank_output); 
 
     // create runner instances
@@ -166,50 +161,19 @@ int main(int argc, char *argv[]) {
     std::chrono::high_resolution_clock::time_point start, end;
     std::chrono::nanoseconds time;
     for (int j = 0; j < num_tests; j++){
-        for (int i = 0; i < ap_count; i++){
-            img_ref[i].range(7, 0) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(15, 8) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(23, 16) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(31, 24) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(39, 32) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(47, 40) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(55, 48) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(63, 56) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(71, 64) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(79, 72) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(87, 80) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(95, 88) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(103, 96) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(111, 104) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(119, 112) = (write_type) rand() % max_pixel_value;
-            img_ref[i].range(127, 120) = (write_type) rand() % max_pixel_value;
-
-            img_float[i].range(7, 0) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(15, 8) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(23, 16) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(31, 24) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(39, 32) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(47, 40) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(55, 48) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(63, 56) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(71, 64) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(79, 72) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(87, 80) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(95, 88) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(103, 96) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(111, 104) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(119, 112) = (write_type) rand() % max_pixel_value;
-            img_float[i].range(127, 120) = (write_type) rand() % max_pixel_value;
+        for (int i = 0; i < size1; i++){
+            img_ref[i] = rand() % max_pixel_value; 
+        }
+        for (int i = 0; i < size2; i++){
+            img_float[i] = rand() % max_pixel_value; 
         }
         // write data into the input buffer
-        std::cout << "aie starts" << std::endl;
         buffer_setup_aie_1.write(img_ref);
         buffer_setup_aie_1.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
         buffer_setup_aie_2.write(img_float);
         buffer_setup_aie_2.sync(XCL_BO_SYNC_BO_TO_DEVICE);
-        
-        std::cout << "aie starts" << std::endl;
+
         // run the kernel
         run_sink_from_aie.start();
         run_setup_aie.start();
@@ -228,8 +192,8 @@ int main(int argc, char *argv[]) {
         buffer_sink_from_aie.read(output_buffer);
 
         std::cout << "\nTest number " << j + 1 << ", HW Time taken: " << time.count() << " ns --> ";
-        //if (check_result(img_ref, img_float, output_buffer, size2) == EXIT_FAILURE)
-            //res = EXIT_FAILURE;
+        if (check_result(img_ref, img_float, output_buffer, size2) == EXIT_FAILURE)
+            res = EXIT_FAILURE;
     }
 
     std::cout << "\nMean execution time --> " << (float) mean / num_tests << " ns\n\n";

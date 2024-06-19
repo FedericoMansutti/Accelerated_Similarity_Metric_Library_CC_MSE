@@ -79,14 +79,14 @@ bool get_xclbin_path(std::string& xclbin_file);
 std::ostream& bold_on(std::ostream& os);
 std::ostream& bold_off(std::ostream& os);
 
-int check_result(int* input_1, int* input_2, float* output, int size) {
+int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
     std::chrono::high_resolution_clock::time_point start, end;
     std::chrono::nanoseconds time;
     start = std::chrono::high_resolution_clock::now();
     int sum = 0;
     float mse;
     for (int i = 0; i < size; i++){
-        sum += (input_1[i] - input_2[i]) * (input_1[i] - input_2[i]);
+        sum += int(input_1[i] - input_2[i]) * int(input_1[i] - input_2[i]);
     }
     mse = (float) sum / size;
     end = std::chrono::high_resolution_clock::now();
@@ -101,8 +101,8 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
 }
 
 int main(int argc, char *argv[]) {
-    int size1 = 16000;
-    int size2 = 16000;
+    int size1 = 272;
+    int size2 = 272;
     int depth1 = 10;
     int depth2 = 10;
     int output_size = 4;
@@ -110,8 +110,8 @@ int main(int argc, char *argv[]) {
     size1 = size1 * depth1;
     size2 = size2 * depth2;
 
-    int img_ref[size1];
-    int img_float[size2];
+    uint8_t* img_ref = new uint8_t[size1];
+    uint8_t* img_float = new uint8_t[size1];
 
 //------------------------------------------------LOADING XCLBIN------------------------------------------    
     std::string xclbin_file;
@@ -135,8 +135,8 @@ int main(int argc, char *argv[]) {
     xrtMemoryGroup bank_input_2  = krnl_setup_aie.group_id(arg_setup_aie_input_2);
 
     // create device buffers - if you have to load some data, here they are
-    xrt::bo buffer_setup_aie_1 = xrt::bo(device, size1 * sizeof(int), xrt::bo::flags::normal, bank_input_1);
-    xrt::bo buffer_setup_aie_2 = xrt::bo(device, size2 * sizeof(int), xrt::bo::flags::normal, bank_input_2); 
+    xrt::bo buffer_setup_aie_1 = xrt::bo(device, size1 * sizeof(uint8_t), xrt::bo::flags::normal, bank_input_1);
+    xrt::bo buffer_setup_aie_2 = xrt::bo(device, size2 * sizeof(uint8_t), xrt::bo::flags::normal, bank_input_2); 
     xrt::bo buffer_sink_from_aie = xrt::bo(device, output_size * sizeof(float), xrt::bo::flags::normal, bank_output); 
 
     // create runner instances

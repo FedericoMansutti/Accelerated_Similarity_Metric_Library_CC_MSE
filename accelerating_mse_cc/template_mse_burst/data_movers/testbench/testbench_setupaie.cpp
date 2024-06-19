@@ -47,9 +47,9 @@ int main(int argc, char* argv[]) {
 
     hls::stream<stream_type> s_1;
     hls::stream<stream_type> s_2;
-    int size1 = 64;
-    int size2 = 64;
-    int depth = 3;
+    int size1 = 272;
+    int size2 = 272;
+    int depth = 1;
 
     size1 *= depth;
     size2 *= depth;
@@ -165,6 +165,7 @@ int main(int argc, char* argv[]) {
 
             file_2 << std::endl;
         }
+        std::cout << "\n\n end \n\n";
 
         file_1.close();
         file_2.close();
