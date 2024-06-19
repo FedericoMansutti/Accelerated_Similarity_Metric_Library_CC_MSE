@@ -4,7 +4,7 @@
 #include "aie_api/aie_adf.hpp"
 #include "aie_api/utils.hpp"
 
-#define vector_size 16 // Size of the vector unit, used for reading from input stream
+#define vector_size 32 // Size of the vector unit, used for reading from input stream
 #define num_partitions 20 // Number of partitions for partial accumulation
 
 #define read_type uint8 // type of the input stream
@@ -21,8 +21,8 @@ inline aie::vector<func_type,vector_size> convert_to_func_type(aie::vector<read_
 }
 
 void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream<read_type>* restrict input_2, output_stream<write_type>* restrict output) {
-    aie::vector<read_type, vector_size> size_vec1 = readincr_v<vector_size>(input_1);
-    aie::vector<read_type, vector_size> size_vec2 = readincr_v<vector_size>(input_2);
+    aie::vector<read_type, vector_size / 2> size_vec1 = readincr_v<vector_size / 2>(input_1);
+    aie::vector<read_type, vector_size / 2> size_vec2 = readincr_v<vector_size / 2>(input_2);
     
     if(aie::equal(size_vec1, size_vec2)){
         printf("\n\nThe two images have the same size\n\n");
@@ -35,7 +35,7 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
     unsigned int size1 = 0;
     unsigned int multiplier = 1;
     int first_zero = 0;
-    for (int i = vector_size - 1; i >= 0; i--){
+    for (int i = vector_size / 2 - 1; i >= 0; i--){
         if (size_vec1[i] != 0){
             first_zero = i;
             break;

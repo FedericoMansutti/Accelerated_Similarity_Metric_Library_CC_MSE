@@ -32,7 +32,8 @@ SOFTWARE.
 #include <cstdlib>
 #include <ctime>
 
-#define max_pixel_value 2
+#define max_pixel_value_1 256
+#define max_pixel_value_2 100
 
 void read_from_stream(int *buffer, hls::stream<int> &stream, size_t size) {
     for (unsigned int i = 0; i < size; i++) {
@@ -55,13 +56,13 @@ int main(int argc, char* argv[]) {
     int *input_1 = new int[size1];
     int *input_2 = new int[size2];
     for (int i = 0; i < size1; i++) {
-        input_1[i] = rand() % max_pixel_value; 
+        input_1[i] = rand() % max_pixel_value_1; 
     }
     for (int i = 0; i < size2; i++) {
-        input_2[i] = rand() % max_pixel_value; 
+        input_2[i] = rand() % max_pixel_value_2; 
     }
 
-    setup_aie(size1, size2, input_1, input_2, s_1, s_2);
+    setup_aie(size1, size2, get_coefficent(input_1, size1), get_coefficent(input_2, size2) ,input_1, input_2, s_1, s_2);
     std::cout << "\n\nstart\n\n";
     
     std::ofstream file_1;

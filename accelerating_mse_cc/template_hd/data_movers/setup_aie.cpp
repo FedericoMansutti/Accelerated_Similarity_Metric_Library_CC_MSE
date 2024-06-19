@@ -58,7 +58,16 @@ SOFTWARE.
 
 extern "C" {
 
-void setup_aie(int size1, int size2, vector_type* input_1, vector_type* input_2,  hls::stream<stream_type>& s_1, hls::stream<stream_type>& s_2) {
+int get_coefficent(int *arr, int size){
+	int max = 0;
+	for (int i = 0; i < size; i++){
+		if (arr[i] > max)
+			max = arr[i];
+	}
+	return (max + 1) / 2;
+}
+
+void setup_aie(int size1, int size2, int coeff1, int coeff2, vector_type* input_1, vector_type* input_2,  hls::stream<stream_type>& s_1, hls::stream<stream_type>& s_2) {
 
 	#pragma HLS interface m_axi port=input_1 depth=100 offset=slave bundle=gmem0
 	#pragma HLS interface axis port=s_1
@@ -142,47 +151,47 @@ void setup_aie(int size1, int size2, vector_type* input_1, vector_type* input_2,
 
 	//write the rest of the pixels
 	for (int i = 0; i < size1 / read_size; i++) {
-		ap_1.range(7, 0) = (pixel_type) input_1[i * read_size + 0];
-		ap_1.range(15, 8) = (pixel_type) input_1[i * read_size + 1];
-		ap_1.range(23, 16) = (pixel_type) input_1[i * read_size + 2];
-		ap_1.range(31, 24) = (pixel_type) input_1[i * read_size + 3];
+		ap_1.range(7, 0) = (pixel_type) input_1[i * read_size + 0] / coeff1;
+		ap_1.range(15, 8) = (pixel_type) input_1[i * read_size + 1] / coeff1;
+		ap_1.range(23, 16) = (pixel_type) input_1[i * read_size + 2] / coeff1;
+		ap_1.range(31, 24) = (pixel_type) input_1[i * read_size + 3] / coeff1;
 
-		ap_1.range(39, 32) = (pixel_type) input_1[i * read_size + 4];
-		ap_1.range(47, 40) = (pixel_type) input_1[i * read_size + 5];
-		ap_1.range(55, 48) = (pixel_type) input_1[i * read_size + 6];
-		ap_1.range(63, 56) = (pixel_type) input_1[i * read_size + 7];
+		ap_1.range(39, 32) = (pixel_type) input_1[i * read_size + 4] / coeff1;
+		ap_1.range(47, 40) = (pixel_type) input_1[i * read_size + 5] / coeff1;
+		ap_1.range(55, 48) = (pixel_type) input_1[i * read_size + 6] / coeff1;
+		ap_1.range(63, 56) = (pixel_type) input_1[i * read_size + 7] / coeff1;
 
-		ap_1.range(71, 64) = (pixel_type) input_1[i * read_size + 8];
-		ap_1.range(79, 72) = (pixel_type) input_1[i * read_size + 9];
-		ap_1.range(87, 80) = (pixel_type) input_1[i * read_size + 10];
-		ap_1.range(95, 88) = (pixel_type) input_1[i * read_size + 11];
+		ap_1.range(71, 64) = (pixel_type) input_1[i * read_size + 8] / coeff1;
+		ap_1.range(79, 72) = (pixel_type) input_1[i * read_size + 9] / coeff1;
+		ap_1.range(87, 80) = (pixel_type) input_1[i * read_size + 10] / coeff1;
+		ap_1.range(95, 88) = (pixel_type) input_1[i * read_size + 11] / coeff1;
 
-		ap_1.range(103, 96) = (pixel_type) input_1[i * read_size + 12];
-		ap_1.range(111, 104) = (pixel_type) input_1[i * read_size + 13];
-		ap_1.range(119, 112) = (pixel_type) input_1[i * read_size + 14];
-		ap_1.range(127, 120) = (pixel_type) input_1[i * read_size + 15];
+		ap_1.range(103, 96) = (pixel_type) input_1[i * read_size + 12] / coeff1;
+		ap_1.range(111, 104) = (pixel_type) input_1[i * read_size + 13] / coeff1;
+		ap_1.range(119, 112) = (pixel_type) input_1[i * read_size + 14] / coeff1;
+		ap_1.range(127, 120) = (pixel_type) input_1[i * read_size + 15] / coeff1;
 
 		///
 
-		ap_2.range(7, 0) = (pixel_type) input_2[i * read_size + 0];
-		ap_2.range(15, 8) = (pixel_type) input_2[i * read_size + 1];
-		ap_2.range(23, 16) = (pixel_type) input_2[i * read_size + 2];
-		ap_2.range(31, 24) = (pixel_type) input_2[i * read_size + 3];
+		ap_2.range(7, 0) = (pixel_type) input_2[i * read_size + 0] / coeff2;
+		ap_2.range(15, 8) = (pixel_type) input_2[i * read_size + 1] / coeff2;
+		ap_2.range(23, 16) = (pixel_type) input_2[i * read_size + 2] / coeff2;
+		ap_2.range(31, 24) = (pixel_type) input_2[i * read_size + 3] / coeff2;
 
-		ap_2.range(39, 32) = (pixel_type) input_2[i * read_size + 4];
-		ap_2.range(47, 40) = (pixel_type) input_2[i * read_size + 5];
-		ap_2.range(55, 48) = (pixel_type) input_2[i * read_size + 6];
-		ap_2.range(63, 56) = (pixel_type) input_2[i * read_size + 7];
+		ap_2.range(39, 32) = (pixel_type) input_2[i * read_size + 4] / coeff2;
+		ap_2.range(47, 40) = (pixel_type) input_2[i * read_size + 5] / coeff2;
+		ap_2.range(55, 48) = (pixel_type) input_2[i * read_size + 6] / coeff2;
+		ap_2.range(63, 56) = (pixel_type) input_2[i * read_size + 7] / coeff2;
 
-		ap_2.range(71, 64) = (pixel_type) input_2[i * read_size + 8];
-		ap_2.range(79, 72) = (pixel_type) input_2[i * read_size + 9];
-		ap_2.range(87, 80) = (pixel_type) input_2[i * read_size + 10];
-		ap_2.range(95, 88) = (pixel_type) input_2[i * read_size + 11];
+		ap_2.range(71, 64) = (pixel_type) input_2[i * read_size + 8] / coeff2;
+		ap_2.range(79, 72) = (pixel_type) input_2[i * read_size + 9] / coeff2;
+		ap_2.range(87, 80) = (pixel_type) input_2[i * read_size + 10] / coeff2;
+		ap_2.range(95, 88) = (pixel_type) input_2[i * read_size + 11] / coeff2;
 
-		ap_2.range(103, 96) = (pixel_type) input_2[i * read_size + 12];
-		ap_2.range(111, 104) = (pixel_type) input_2[i * read_size + 13];
-		ap_2.range(119, 112) = (pixel_type) input_2[i * read_size + 14];
-		ap_2.range(127, 120) = (pixel_type) input_2[i * read_size + 15];
+		ap_2.range(103, 96) = (pixel_type) input_2[i * read_size + 12] / coeff2;
+		ap_2.range(111, 104) = (pixel_type) input_2[i * read_size + 13] / coeff2;
+		ap_2.range(119, 112) = (pixel_type) input_2[i * read_size + 14] / coeff2;
+		ap_2.range(127, 120) = (pixel_type) input_2[i * read_size + 15] / coeff2;
 
 		s_1.write((stream_type) ap_1);
 		s_2.write((stream_type) ap_2);

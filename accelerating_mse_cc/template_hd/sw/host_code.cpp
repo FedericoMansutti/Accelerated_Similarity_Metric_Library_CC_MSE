@@ -44,14 +44,17 @@ SOFTWARE.
 // args indexes for setup_aie kernel
 #define arg_setup_aie_size1 0
 #define arg_setup_aie_size2 1
-#define arg_setup_aie_input_1 2
-#define arg_setup_aie_input_2 3
+#define arg_setup_aie_coeff1 2
+#define arg_setup_aie_coeff2 3
+#define arg_setup_aie_input_1 4
+#define arg_setup_aie_input_2 5
 
 // args indexes for sink_from_aie kernel
 #define arg_sink_from_aie_output 1
 #define arg_sink_from_aie_size 2
 
-#define max_pixel_value 2
+#define max_pixel_value_1 256
+#define max_pixel_value_2 100
 
 bool get_xclbin_path(std::string& xclbin_file);
 std::ostream& bold_on(std::ostream& os);
@@ -61,9 +64,11 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
     std::chrono::high_resolution_clock::time_point start, end;
     std::chrono::nanoseconds time;
     start = std::chrono::high_resolution_clock::now();
+    int coeff1 = get_coefficent(input_1, size);
+    int coeff2 = get_coefficent(input_2, size);
     float sum = 0.0;
     for (int i = 0; i < size; i++){
-        if (input_1[i] != input_2[i])
+        if ((int) input_1[i] / coeff1 != (int) input_2[i] / coeff2)
             sum++;
     }
     sum /= size;
@@ -76,6 +81,15 @@ int check_result(int* input_1, int* input_2, float* output, int size) {
     }
     std::cout << "Test passed!" << std::endl << std::endl;
     return EXIT_SUCCESS;
+}
+
+int get_coefficent(int *arr, int size){
+	int max = 0;
+	for (int i = 0; i < size; i++){
+		if (arr[i] > size)
+			max = arr[i];
+	}
+	return (max + 1) / 2;
 }
 
 int main(int argc, char *argv[]) {
@@ -143,11 +157,14 @@ int main(int argc, char *argv[]) {
     std::chrono::nanoseconds time;
     for (int j = 0; j < num_tests; j++){
         for (int i = 0; i < size1; i++){
-            img_ref[i] = rand() % max_pixel_value; 
+            img_ref[i] = rand() % max_pixel_value_1; 
         }
         for (int i = 0; i < size2; i++){
-            img_float[i] = rand() % max_pixel_value; 
+            img_float[i] = rand() % max_pixel_value_2; 
         }
+
+        run_setup_aie.set_arg(arg_setup_aie_coeff1, get_coefficent(img_ref, size1));
+        run_setup_aie.set_arg(arg_setup_aie_coeff2, get_coefficent(img_float, size2));
         // write data into the input buffer
         buffer_setup_aie_1.write(img_ref);
         buffer_setup_aie_1.sync(XCL_BO_SYNC_BO_TO_DEVICE);
@@ -166,8 +183,8 @@ int main(int argc, char *argv[]) {
         end = std::chrono::high_resolution_clock::now();
 
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-        sum_hw += time.count() / 1000; // convert to microseconds 
-        sum_squared_hw += time.count() * time.count() / 1000000;
+        sum_hw += time.count() / 1000000; // convert to milliseconds 
+        sum_squared_hw += (time.count() / 1000000) * (time.count() / 1000000);
 
         // read the output buffer
         buffer_sink_from_aie.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
@@ -180,13 +197,13 @@ int main(int argc, char *argv[]) {
         end = std::chrono::high_resolution_clock::now();
 
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-        sum_sw += time.count() / 1000; // convert to microseconds 
-        sum_squared_sw += time.count() * time.count() / 1000000;
+        sum_sw += time.count() / 1000000; // convert to milliseconds 
+        sum_squared_sw += (time.count() / 1000000) * (time.count() / 1000000);
     }
     // compute the variance as Var(X) = E(X ** 2) - E(X) ** 2
     std::cout << "\nResults on " << num_tests << " tests: ";
-    std::cout << "\n\nMean HW time: " << sum_hw / num_tests << " microseconds, HW Standard Deviation: " << sqrt((sum_squared_hw / num_tests) - (sum_hw / num_tests) * (sum_hw / num_tests)) << "\n";
-    std::cout << "Mean SW time: " << sum_sw / num_tests << " microseconds, SW Standard Deviation: " << sqrt((sum_squared_sw / num_tests) - (sum_sw / num_tests) * (sum_sw / num_tests)) << "\n";
+    std::cout << "\n\nMean HW time: " << sum_hw / num_tests << " milliseconds, HW Standard Deviation: " << sqrt((sum_squared_hw / num_tests) - (sum_hw / num_tests) * (sum_hw / num_tests)) << "\n";
+    std::cout << "Mean SW time: " << sum_sw / num_tests << " milliseconds, SW Standard Deviation: " << sqrt((sum_squared_sw / num_tests) - (sum_sw / num_tests) * (sum_sw / num_tests)) << "\n";
     std::cout << "\nSpeedUp factor: " << (sum_sw / num_tests) / (sum_hw / num_tests) << "\n";
     std::cout << "\nF-ratio: " << sqrt((sum_squared_sw / num_tests) - (sum_sw / num_tests) * (sum_sw / num_tests)) / sqrt((sum_squared_hw / num_tests) - (sum_hw / num_tests) * (sum_hw / num_tests)) << "\n\n";
 
