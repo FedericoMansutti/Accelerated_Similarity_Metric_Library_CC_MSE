@@ -10,6 +10,7 @@
 #define read_type uint8 // type of the input stream
 #define func_type int // type used for doing the computations
 #define write_type float // type of the output stream
+#define kernel_count 2
 
 //API REFERENCE for STREAM: 
 // https://docs.amd.com/r/ehttps://docs.amd.com/r/en-US/ug1079-ai-engine-kernel-coding/Reading-and-Advancing-an-Input-Streamn-US/ug1079-ai-engine-kernel-coding/Reading-and-Advancing-an-Input-Stream
@@ -48,6 +49,8 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
 
     if (size1 % vector_size != 0) 
         printf("\n\nWarning: The number of pixel is not divisible by 16, the image will be truncated...\n");
+
+    size1 = size1 / kernel_count;
 
     aie::vector<func_type, vector_size> partial_sums[num_partitions]; // init partial sums which contains the "map" phase of map-reduce pattern
     for (int i = 0; i < num_partitions; i++)

@@ -10,6 +10,7 @@
 #define read_type uint8 // type of the input stream
 #define func_type int // type used for doing the computations
 #define write_type float // type of the output stream
+#define kernel_count 2
 
 //API REFERENCE for STREAM: 
 // https://docs.amd.com/r/ehttps://docs.amd.com/r/en-US/ug1079-ai-engine-kernel-coding/Reading-and-Advancing-an-Input-Streamn-US/ug1079-ai-engine-kernel-coding/Reading-and-Advancing-an-Input-Stream
@@ -53,11 +54,12 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
 
     aie::vector<func_type, vector_size> diff;
     // Process each vector with partial accumulators
-    int loop_count = size1 / vector_size;
+    int loop_count = size1 / (vector_size * kernel_count);
     for (int i = 0; i < loop_count; i++) 
     chess_loop_range(4, )
     chess_prepare_for_pipelining
     {
+        printf("loop: %d\n", i);
         diff = aie::add(convert_to_func_type(readincr_v<vector_size>(input_1)), aie::neg(convert_to_func_type(readincr_v<vector_size>(input_2)))); // compute difference vectorized
         partial_sums[i % num_partitions] += aie::reduce_add(aie::mul(diff, diff).to_vector<func_type>()); // add to partial sums, after conversion from accumulator to vector
     }
@@ -71,6 +73,18 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
     
     write_type res = (write_type) final_sum / size1;
     aie::vector<write_type, 4> mse;
+    printf("kernel %f:\n", res);
     mse.set(res, 0);
     writeincr(output, mse); // divide and write to get the real MSE
+}
+
+void sum_kernels (input_stream<float>* restrict kernel_1, input_stream<float>* restrict kernel_2, output_stream<write_type>* restrict output){
+    float mse1 = readincr_v<4>(kernel_1)[0];
+    printf("sum %f 1: \n", mse1);
+    float mse2 = readincr_v<4>(kernel_2)[0];
+    printf("sum %f 2:\n", mse2);
+    float mse_tot = mse1 + mse2;
+    aie::vector<write_type, 4> mse;
+    mse.set(mse_tot, 0);
+    writeincr(output, mse);
 }
