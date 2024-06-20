@@ -107,10 +107,10 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < input_size / kernel_count; i++){ // kernel count MUST be redefined in this file
         file_in_1 >> img_ref[i];
-        file_in_3 >> img_float[i];
+        file_in_2 >> img_float[i];
     }   
     for (int i = input_size / kernel_count; i < input_size; i++){
-        file_in_2 >> img_ref[i];
+        file_in_3 >> img_ref[i];
         file_in_4 >> img_float[i];
     }
 
