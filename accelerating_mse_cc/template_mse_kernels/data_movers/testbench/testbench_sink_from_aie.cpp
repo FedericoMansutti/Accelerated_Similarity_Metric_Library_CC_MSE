@@ -31,6 +31,7 @@ SOFTWARE.
 
 #define read_size 16 // size of each line of the file (number of pixel)
 #define output_size 4 // size of the output we write to the output file (number of values)
+#define kernel_count 2
 
 float mse(int size, float *img_ref, float *img_float){
     unsigned long long int tot = 0;
@@ -41,6 +42,7 @@ float mse(int size, float *img_ref, float *img_float){
 }
 
 int main(int argc, char *argv[]) { 
+    printf("\n\nstart the SINK\n\n");
     // This testbech will test the sink_from_aie kernel
     // The kernel will receive a stream of data from the AIE
     // and will write it into memory
@@ -50,30 +52,41 @@ int main(int argc, char *argv[]) {
     //two files containing two images
     std::ifstream file_in_1;
     std::ifstream file_in_2;
+    std::ifstream file_in_3;
+    std::ifstream file_in_4;
     file_in_1.open("../../aie/data/in_plio_source_1.txt");
     file_in_2.open("../../aie/data/in_plio_source_2.txt");
-    if (!file_in_1 || !file_in_2) {
-        std::cerr << "Unable to open file ../../aie/data/in_plio_source_1.txt or file ../../aie/data/in_plio_source_2.txt";
+    file_in_3.open("../../aie/data/in_plio_source_3.txt");
+    file_in_4.open("../../aie/data/in_plio_source_4.txt");
+    if (!file_in_1 || !file_in_2 || !file_in_3 || !file_in_4) {
+        std::cerr << "Unable to open input files";
         return 1;
     }
 
-    int input_size1 = 0;
-    int input_size2 = 0;
+    int input_size = 0;
     unsigned int multiplier = 1;
     int temp;
     //calculates image size of image1 and image2
     for (int i = 0; i < read_size; i++){
         file_in_1 >> temp;
-        input_size1 += multiplier * temp;
-        file_in_2 >> temp;
-        input_size2 += multiplier * temp;
+        printf("%d ", temp);
+        input_size += multiplier * temp;
         multiplier *= 10;
+        // consume useless size
+        file_in_2 >> temp; 
+        file_in_3 >> temp;
+        file_in_4 >> temp;
     }
     // I create the buffer to write into memory
     float *buffer = new float[output_size];
     float *real_values = new float[output_size];
-    float *img_ref = new float[input_size1];
-    float *img_float = new float[input_size2];
+    float *img_ref = new float[input_size];
+    float *img_float = new float[input_size];
+
+    for(int i = 0; i < input_size; i++){
+        img_ref[i] = 0.0;
+        img_float[i] = 0.0;
+    }
 
     // I have to read the output of AI Engine from the file. 
     // Otherwise, I have no input for my testbench
@@ -92,14 +105,30 @@ int main(int argc, char *argv[]) {
 
     sink_from_aie(s, buffer, output_size);
 
-    for (int i = 0; i < input_size1; i++){
+    for (int i = 0; i < input_size / kernel_count; i++){ // kernel count MUST be redefined in this file
         file_in_1 >> img_ref[i];
+        file_in_3 >> img_float[i];
     }   
-    for (int i = 0; i < input_size2; i++){
-        file_in_2 >> img_float[i];
-    } 
+    for (int i = input_size / kernel_count; i < input_size; i++){
+        file_in_2 >> img_ref[i];
+        file_in_4 >> img_float[i];
+    }
 
-    real_values[0] = mse(input_size2, img_ref, img_float);
+    printf("\nfirst image: %d \n", input_size);
+    for (int i = 0; i < input_size; i++){
+        printf("%d ", (int) img_ref[i]);
+        if ((i + 1) % 16 == 0)
+            printf("\n");
+    }   
+
+    printf("\nsecond image: %d \n", input_size);
+    for (int i = 0; i < input_size; i++){
+        printf("%d ", (int) img_float[i]);
+        if ((i + 1) % 16 == 0)
+            printf("\n");
+    }  
+
+    real_values[0] = mse(input_size, img_ref, img_float);
    
 
     // if the kernel is correct, it will contains the expected data.
