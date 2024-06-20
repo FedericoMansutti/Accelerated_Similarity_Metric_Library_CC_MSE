@@ -32,7 +32,8 @@ SOFTWARE.
 #include <cstdlib>
 #include <ctime>
 
-#define max_pixel_value 2
+#define max_pixel_value_1 256
+#define max_pixel_value_2 100
 
 void read_from_stream(int *buffer, hls::stream<int> &stream, size_t size) {
     for (unsigned int i = 0; i < size; i++) {
@@ -55,13 +56,13 @@ int main(int argc, char* argv[]) {
     int *input_1 = new int[size1];
     int *input_2 = new int[size2];
     for (int i = 0; i < size1; i++) {
-        input_1[i] = rand() % max_pixel_value; 
+        input_1[i] = rand() % max_pixel_value_1; 
     }
     for (int i = 0; i < size2; i++) {
-        input_2[i] = rand() % max_pixel_value; 
+        input_2[i] = rand() % max_pixel_value_2; 
     }
 
-    setup_aie(size1, size2, input_1, input_2, s_1, s_2);
+    setup_aie(size1, size2, get_max(input_1, size1), get_max(input_2, size2) ,input_1, input_2, s_1, s_2);
     std::cout << "\n\nstart\n\n";
     
     std::ofstream file_1;
@@ -71,7 +72,7 @@ int main(int argc, char* argv[]) {
     if (file_1.is_open() && file_2.is_open()) {
         stream_type ap_1;
 	    stream_type ap_2;
-        for (int i = 0; i < size1 / read_size + 1; i++){
+        for (int i = 0; i < size1 / read_size + 2; i++){
             ap_1 = (stream_type) s_1.read();
 
             file_1 << (int) ap_1.range(7, 0) << " ";
@@ -97,7 +98,7 @@ int main(int argc, char* argv[]) {
             file_1 << std::endl;
         }
 
-        for (int i = 0; i < size2 / read_size + 1; i++){
+        for (int i = 0; i < size2 / read_size + 2; i++){
             ap_2 = (stream_type) s_2.read();
 
             file_2 << (int) ap_2.range(7, 0) << " ";

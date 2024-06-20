@@ -4,7 +4,7 @@
 #include "aie_api/aie_adf.hpp"
 #include "aie_api/utils.hpp"
 
-#define vector_size 16 // Size of the vector unit, used for reading from input stream
+#define vector_size 32 // Size of the vector unit, used for reading from input stream
 #define num_partitions 20 // Number of partitions for partial accumulation
 
 #define read_type uint8 // type of the input stream
@@ -21,8 +21,8 @@ inline aie::vector<func_type,vector_size> convert_to_func_type(aie::vector<read_
 }
 
 void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream<read_type>* restrict input_2, output_stream<write_type>* restrict output) {
-    aie::vector<read_type, vector_size> size_vec1 = readincr_v<vector_size>(input_1);
-    aie::vector<read_type, vector_size> size_vec2 = readincr_v<vector_size>(input_2);
+    aie::vector<read_type, vector_size / 2> size_vec1 = readincr_v<vector_size / 2>(input_1);
+    aie::vector<read_type, vector_size / 2> size_vec2 = readincr_v<vector_size / 2>(input_2);
     
     if(aie::equal(size_vec1, size_vec2)){
         printf("\n\nThe two images have the same size\n\n");
@@ -35,7 +35,7 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
     unsigned int size1 = 0;
     unsigned int multiplier = 1;
     int first_zero = 0;
-    for (int i = vector_size - 1; i >= 0; i--){
+    for (int i = vector_size / 2 - 1; i >= 0; i--){
         if (size_vec1[i] != 0){
             first_zero = i;
             break;
@@ -48,15 +48,24 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
 
     if (size1 % vector_size != 0) printf("\n\nWarning: The number of pixel is not divisible by 16, the image will be truncated...\n");
 
+    func_type coeff1 = (func_type) readincr_v<vector_size / 2>(input_1)[0];
+    func_type coeff2 = (func_type) readincr_v<vector_size / 2>(input_2)[0];
+
     unsigned long long int partial_sums[num_partitions] = {0}; // init partial sums which contains the "map" phase of map-reduce pattern
 
-
     // Process each vector with partial accumulators
+    aie::vector<func_type, vector_size> vec_1;
+    aie::vector<func_type, vector_size> vec_2;
+    aie::vector<func_type, vector_size> zeros = aie::zeros<func_type, vector_size>();
+    aie::vector<func_type, vector_size> ones = aie::add(zeros, 1);
     for (int i = 0; i < size1 / vector_size; i++) 
     chess_loop_range(4, )
     chess_prepare_for_pipelining
     {
-        partial_sums[i % num_partitions] += aie::reduce_add(aie::abs(aie::add(convert_to_func_type(readincr_v<vector_size>(input_1)), aie::neg(convert_to_func_type(readincr_v<vector_size>(input_2))))));
+        vec_1 = aie::select(zeros, ones, aie::ge(convert_to_func_type(readincr_v<vector_size>(input_1)), coeff1));
+        vec_2 = aie::select(zeros, ones, aie::ge(convert_to_func_type(readincr_v<vector_size>(input_2)), coeff2));
+
+        partial_sums[i % num_partitions] += aie::reduce_add(aie::abs(aie::add(vec_1, aie::neg(vec_2))));
     }
     unsigned long long int hd = 0; // final sum for the MSE
     for (int i = 0; i < num_partitions; i++) 

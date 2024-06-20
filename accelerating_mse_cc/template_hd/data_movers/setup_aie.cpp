@@ -58,7 +58,16 @@ SOFTWARE.
 
 extern "C" {
 
-void setup_aie(int size1, int size2, vector_type* input_1, vector_type* input_2,  hls::stream<stream_type>& s_1, hls::stream<stream_type>& s_2) {
+int get_max(int *arr, int size){
+	int max = 0;
+	for (int i = 0; i < size; i++){
+		if (arr[i] > max)
+			max = arr[i];
+	}
+	return max;
+}
+
+void setup_aie(int size1, int size2, int coeff1, int coeff2, vector_type* input_1, vector_type* input_2,  hls::stream<stream_type>& s_1, hls::stream<stream_type>& s_2) {
 
 	#pragma HLS interface m_axi port=input_1 depth=100 offset=slave bundle=gmem0
 	#pragma HLS interface axis port=s_1
@@ -67,6 +76,9 @@ void setup_aie(int size1, int size2, vector_type* input_1, vector_type* input_2,
 	#pragma HLS interface m_axi port=input_2 depth=100 offset=slave bundle=gmem0
 	#pragma HLS interface axis port=s_2
 	#pragma HLS interface s_axilite port=input_2 bundle=control
+
+	#pragma HLS interface s_axilite port=coeff1 bundle=control
+	#pragma HLS interface s_axilite port=coeff2 bundle=control
 
 	#pragma HLS interface s_axilite port=size1 bundle=control
 	#pragma HLS interface s_axilite port=size2 bundle=control
@@ -136,6 +148,52 @@ void setup_aie(int size1, int size2, vector_type* input_1, vector_type* input_2,
 	ap_2.range(111, 104) = (pixel_type) size_2_vec[13];
 	ap_2.range(119, 112) = (pixel_type) size_2_vec[14];
 	ap_2.range(127, 120) = (pixel_type) size_2_vec[15];
+
+	s_1.write((stream_type) ap_1);
+	s_2.write((stream_type) ap_2);
+
+	int c1 = coeff1;
+	ap_1.range(7, 0) = (pixel_type) ((c1 + 1) / 2);
+	ap_1.range(15, 8) = (pixel_type) 0;
+	ap_1.range(23, 16) = (pixel_type) 0;
+	ap_1.range(31, 24) = (pixel_type) 0;
+
+	ap_1.range(39, 32) = (pixel_type) 0;
+	ap_1.range(47, 40) = (pixel_type) 0;
+	ap_1.range(55, 48) = (pixel_type) 0;
+	ap_1.range(63, 56) = (pixel_type) 0;
+
+	ap_1.range(71, 64) = (pixel_type) 0;
+	ap_1.range(79, 72) = (pixel_type) 0;
+	ap_1.range(87, 80) = (pixel_type) 0;
+	ap_1.range(95, 88) = (pixel_type) 0;
+
+	ap_1.range(103, 96) = (pixel_type) 0;
+	ap_1.range(111, 104) = (pixel_type) 0;
+	ap_1.range(119, 112) = (pixel_type) 0;
+	ap_1.range(127, 120) = (pixel_type) 0;
+
+	///
+	int c2 = coeff2;
+	ap_2.range(7, 0) = (pixel_type) ((c2 + 1) / 2);
+	ap_2.range(15, 8) = (pixel_type) 0;
+	ap_2.range(23, 16) = (pixel_type) 0;
+	ap_2.range(31, 24) = (pixel_type) 0;
+
+	ap_2.range(39, 32) = (pixel_type) 0;
+	ap_2.range(47, 40) = (pixel_type) 0;
+	ap_2.range(55, 48) = (pixel_type) 0;
+	ap_2.range(63, 56) = (pixel_type) 0;
+
+	ap_2.range(71, 64) = (pixel_type) 0;
+	ap_2.range(79, 72) = (pixel_type) 0;
+	ap_2.range(87, 80) = (pixel_type) 0;
+	ap_2.range(95, 88) = (pixel_type) 0;
+
+	ap_2.range(103, 96) = (pixel_type) 0;
+	ap_2.range(111, 104) = (pixel_type) 0;
+	ap_2.range(119, 112) = (pixel_type) 0;
+	ap_2.range(127, 120) = (pixel_type) 0;
 
 	s_1.write((stream_type) ap_1);
 	s_2.write((stream_type) ap_2);
