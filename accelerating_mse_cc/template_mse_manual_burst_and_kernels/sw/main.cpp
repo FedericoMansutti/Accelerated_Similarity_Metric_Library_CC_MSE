@@ -55,39 +55,27 @@ bool get_xclbin_path(std::string& xclbin_file);
 std::ostream& bold_on(std::ostream& os);
 std::ostream& bold_off(std::ostream& os);
 
-int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
-    std::chrono::high_resolution_clock::time_point start, end;
-    std::chrono::nanoseconds time;
-    start = std::chrono::high_resolution_clock::now();
-    int sum = 0;
-    float mse;
-    for (int i = 0; i < size; i++){
-        sum += int(input_1[i] - input_2[i]) * int(input_1[i] - input_2[i]);
-    }
-    mse = (float) sum / size;
-    end = std::chrono::high_resolution_clock::now();
-    time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    std::cout << "SW Time Taken: " << time.count() << " ns, ";
-    if (abs(mse - output[0]) / mse > 0.01){
-        std::cout << "Error for MSE --> expected: " << mse << " got:  " << output[0] << std::endl;
-        return EXIT_FAILURE;
-    }
-    std::cout << "Test passed!" << std::endl;
-    return EXIT_SUCCESS;
-}
-
 int main(int argc, char *argv[]) {
-    int size1 = 272;
-    int size2 = 272;
-    int depth1 = 10;
-    int depth2 = 10;
+    int size1, size2;
     int output_size = 4;
 
-    size1 = size1 * depth1;
-    size2 = size2 * depth2;
+    std::ifstream file_1;
+    std::ifstream file_2;
+    file_1.open("../../../img_ref.txt");
+    file_2.open("../../../img_float.txt");
+
+    file_1 >> size1;
+    file_2 >> size2;
 
     uint8_t* img_ref = new uint8_t[size1];
-    uint8_t* img_float = new uint8_t[size1];
+    uint8_t* img_float = new uint8_t[size2];
+
+    for (int i = 0; i < size1; i++){
+        file_1 >> img_ref[i]; 
+    }
+    for (int i = 0; i < size2; i++){
+        file_2 >> img_float[i]; 
+    }
 
 //------------------------------------------------LOADING XCLBIN------------------------------------------    
     std::string xclbin_file;
@@ -130,55 +118,28 @@ int main(int argc, char *argv[]) {
     run_sink_from_aie.set_arg(arg_sink_from_aie_size, output_size);
 
     float output_buffer[output_size];
+    // write data into the input buffer
+    buffer_setup_aie_1.write(img_ref);
+    buffer_setup_aie_1.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
-    int num_tests = 5;
-    float mean = 0;
-    int res = EXIT_SUCCESS;
-    std::chrono::high_resolution_clock::time_point start, end;
-    std::chrono::nanoseconds time;
-    for (int j = 0; j < num_tests; j++){
-        for (int i = 0; i < size1; i++){
-            img_ref[i] = rand() % max_pixel_value; 
-        }
-        for (int i = 0; i < size2; i++){
-            img_float[i] = rand() % max_pixel_value; 
-        }
-        // write data into the input buffer
-        buffer_setup_aie_1.write(img_ref);
-        buffer_setup_aie_1.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+    buffer_setup_aie_2.write(img_float);
+    buffer_setup_aie_2.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
-        buffer_setup_aie_2.write(img_float);
-        buffer_setup_aie_2.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+    // run the kernel
+    run_sink_from_aie.start();
+    run_setup_aie.start();
 
-        // run the kernel
-        run_sink_from_aie.start();
-        run_setup_aie.start();
-        start = std::chrono::high_resolution_clock::now();
+    // wait for the kernel to finish
+    run_setup_aie.wait();
+    run_sink_from_aie.wait();
 
-        // wait for the kernel to finish
-        run_setup_aie.wait();
-        run_sink_from_aie.wait();
-        end = std::chrono::high_resolution_clock::now();
+    // read the output buffer
+    buffer_sink_from_aie.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+    buffer_sink_from_aie.read(output_buffer);
 
-        time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-        mean += time.count();
+    std::cout << "\n\nThe value of the MSE between the img_ref.txt and img_float.txt is --> " << (float) output_buffer[0]  << "\n";
 
-        // read the output buffer
-        buffer_sink_from_aie.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-        buffer_sink_from_aie.read(output_buffer);
-
-        std::cout << "\nTest number " << j + 1 << ", HW Time taken: " << time.count() << " ns --> ";
-        if (check_result(img_ref, img_float, output_buffer, size2) == EXIT_FAILURE)
-            res = EXIT_FAILURE;
-    }
-
-    std::cout << "\nMean execution time --> " << (float) mean / num_tests << " ns\n\n";
-
-    // ---------------------------------CONFRONTO PER VERIFICARE L'ERRORE--------------------------------------
-        
-    // Here there should be a code for checking correctness of your application, like a software application
-
-    return res;
+    return EXIT_SUCCESS;
 }
 
 

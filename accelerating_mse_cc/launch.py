@@ -28,7 +28,7 @@ elif sys.argv[1] == "compile_hw_emu":
 elif sys.argv[1] == "compile_hw":
     os.system(f"cd template_{sys.argv[2]} && make clean && make build_hw TARGET=hw && cd ..")
 
-elif sys.argv[1] == "run_hw_emu":
+elif sys.argv[1] == "run_emu":
     os.system(f"cd template_{sys.argv[2]} && cd sw && make clean && cd .. && make build_sw && cd sw && chmod u+x ./setup_emu.sh && source ./setup_emu.sh -s on && ./setup_emu.sh -s on && ./host_overlay.exe && cd .. && cd ..")
 
 elif sys.argv[1] == "run_hw":
