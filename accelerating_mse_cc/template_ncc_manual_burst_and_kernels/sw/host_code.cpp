@@ -81,10 +81,10 @@ int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
 }
 
 int main(int argc, char *argv[]) {
-    int size1 = 512;
-    int size2 = 512;
-    int depth1 = 10;
-    int depth2 = 10;
+    int size1 = 512 * 512;
+    int size2 = 512 * 512;
+    int depth1 = 100;
+    int depth2 = 100;
     int output_size = 4;
 
     size1 = size1 * depth1;
@@ -136,7 +136,10 @@ int main(int argc, char *argv[]) {
     float output_buffer[output_size];
 
     int num_tests = 5;
-    float mean = 0;
+    float sum_hw = 0;
+    float sum_squared_hw = 0;
+    float sum_sw = 0;
+    float sum_squared_sw = 0;
     int res = EXIT_SUCCESS;
     std::chrono::high_resolution_clock::time_point start, end;
     std::chrono::nanoseconds time;
@@ -165,18 +168,31 @@ int main(int argc, char *argv[]) {
         end = std::chrono::high_resolution_clock::now();
 
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-        mean += time.count();
+        sum_hw += time.count() / 1000000; // convert to milliseconds 
+        sum_squared_hw += (time.count() / 1000000) * (time.count() / 1000000);
 
         // read the output buffer
         buffer_sink_from_aie.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
         buffer_sink_from_aie.read(output_buffer);
 
+        start = std::chrono::high_resolution_clock::now();
         std::cout << "\nTest number " << j + 1 << ", HW Time taken: " << time.count() << " ns --> ";
         if (check_result(img_ref, img_float, output_buffer, size2) == EXIT_FAILURE)
             res = EXIT_FAILURE;
-    }
+        end = std::chrono::high_resolution_clock::now();
 
-    std::cout << "\nMean execution time --> " << (float) mean / num_tests << " ns\n\n";
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        sum_sw += time.count() / 1000000; // convert to milliseconds 
+        sum_squared_sw += (time.count() / 1000000) * (time.count() / 1000000);
+    }
+    // compute the variance as Var(X) = E(X ** 2) - E(X) ** 2
+    std::cout << "\nResults on " << num_tests << " tests: ";
+    std::cout << "\n\nMean HW time: " << sum_hw / num_tests << " milliseconds, HW Standard Deviation: " << sqrt((sum_squared_hw / num_tests) - (sum_hw / num_tests) * (sum_hw / num_tests)) << "\n";
+    std::cout << "Mean SW time: " << sum_sw / num_tests << " milliseconds, SW Standard Deviation: " << sqrt((sum_squared_sw / num_tests) - (sum_sw / num_tests) * (sum_sw / num_tests)) << "\n";
+    std::cout << "\nSpeedUp factor: " << (sum_sw / num_tests) / (sum_hw / num_tests) << "\n";
+    std::cout << "\nF-ratio: " << sqrt((sum_squared_sw / num_tests) - (sum_sw / num_tests) * (sum_sw / num_tests)) / sqrt((sum_squared_hw / num_tests) - (sum_hw / num_tests) * (sum_hw / num_tests)) << "\n\n";
+
+
 
     // ---------------------------------CONFRONTO PER VERIFICARE L'ERRORE--------------------------------------
         
