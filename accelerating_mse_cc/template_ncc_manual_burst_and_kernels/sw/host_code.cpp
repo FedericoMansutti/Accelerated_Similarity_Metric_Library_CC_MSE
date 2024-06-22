@@ -31,7 +31,7 @@ SOFTWARE.
 #include "experimental/xrt_kernel.h"
 #include "experimental/xrt_uuid.h"
 #include "../common/common.h"
-#include "<cmath>"
+#include <cmath>
 
 // For hw emulation, run in sw directory: source ./setup_emu.sh -s on
 
@@ -64,9 +64,9 @@ int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
     unsigned long long int denom_1 = 0;
     unsigned long long int denom_2 = 0;
     for (int i = 0; i < size; i++){
-        num += img_ref[i] * img_float[i];
-        denom_1 += img_ref[i] * img_ref[i];
-        denom_2 += img_float[i] * img_float[i];
+        num += input_1[i] * input_2[i];
+        denom_1 += input_1[i] * input_1[i];
+        denom_2 += input_2[i] * input_2[i];
     }
     float cc = (float) (num * num) / (denom_1 * denom_2);
     end = std::chrono::high_resolution_clock::now();
@@ -81,8 +81,8 @@ int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
 }
 
 int main(int argc, char *argv[]) {
-    int size1 = 272;
-    int size2 = 272;
+    int size1 = 512;
+    int size2 = 512;
     int depth1 = 10;
     int depth2 = 10;
     int output_size = 4;

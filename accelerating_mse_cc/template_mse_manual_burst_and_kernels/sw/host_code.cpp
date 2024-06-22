@@ -77,8 +77,8 @@ int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
 }
 
 int main(int argc, char *argv[]) {
-    int size1 = 272;
-    int size2 = 272;
+    int size1 = 512;
+    int size2 = 512;
     int depth1 = 10;
     int depth2 = 10;
     int output_size = 4;
