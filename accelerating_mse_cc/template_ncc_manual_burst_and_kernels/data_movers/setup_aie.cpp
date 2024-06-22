@@ -130,6 +130,7 @@ hls::stream<stream_type>& s_3, hls::stream<stream_type>& s_4) {
 		}
 
 	}
+	if (remainder == 0) return;
 	start = burst_length * burst_count;
 	input_1.read_request(start, remainder);
 	input_2.read_request(start, remainder);

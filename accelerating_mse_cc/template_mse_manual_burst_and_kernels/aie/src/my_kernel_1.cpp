@@ -59,8 +59,8 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
     chess_loop_range(4, )
     chess_prepare_for_pipelining
     {
-        printf("loop: %d\n", i);
-        diff = aie::add(convert_to_func_type(readincr_v<vector_size>(input_1)), aie::neg(convert_to_func_type(readincr_v<vector_size>(input_2)))); // compute difference vectorized
+        //printf("loop: %d\n", i);
+        diff = aie::sub(convert_to_func_type(readincr_v<vector_size>(input_1)), convert_to_func_type(readincr_v<vector_size>(input_2))); // compute difference vectorized
         partial_sums[i % num_partitions] += aie::reduce_add(aie::mul(diff, diff).to_vector<func_type>()); // add to partial sums, after conversion from accumulator to vector
     }
 

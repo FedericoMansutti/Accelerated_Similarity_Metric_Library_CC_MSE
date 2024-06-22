@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
         file_in_4 >> img_float[i];
     }
 
-    printf("\nfirst image: %d \n", input_size);
+    /*printf("\nfirst image: %d \n", input_size);
     for (int i = 0; i < input_size; i++){
         printf("%d ", (int) img_ref[i]);
         if ((i + 1) % 16 == 0)
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
         printf("%d ", (int) img_float[i]);
         if ((i + 1) % 16 == 0)
             printf("\n");
-    }  
+    }*/  
 
     real_values[0] = mse(input_size, img_ref, img_float);
    

@@ -48,27 +48,27 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
     }
 
     if (size1 % vector_size != 0) 
-        printf("\n\nWarning: The number of pixel is not divisible by 32, the image will be truncated...\n");
+        printf("\n\nWarning: The number of pixel is not divisible by the read size, the image will be truncated...\n");
 
     unsigned long long int partial_num[num_partitions] = {0};
     unsigned long long int partial_denom_1[num_partitions] = {0};
     unsigned long long int partial_denom_2[num_partitions] = {0};
 
-    aie::vector<func_type, vector_size> vec_1;
-    aie::vector<func_type, vector_size> vec_2;
+    aie::vector<read_type, vector_size> vec_1;
+    aie::vector<read_type, vector_size> vec_2;
     // Process each vector with partial accumulators
     int loop_count = size1 / (vector_size * kernel_count);
     for (int i = 0; i < loop_count; i++) 
     chess_loop_range(4, )
     chess_prepare_for_pipelining
     {
-        vec_1 = convert_to_func_type(readincr_v<vector_size>(input_1));
-        vec_2 = convert_to_func_type(readincr_v<vector_size>(input_2));
+        vec_1 = readincr_v<vector_size>(input_1);
+        vec_2 = readincr_v<vector_size>(input_2);
         partial_num[i % num_partitions] += aie::reduce_add(aie::mul(vec_1, vec_2).to_vector<func_type>());
         partial_denom_1[i % num_partitions] += aie::reduce_add(aie::mul(vec_1, vec_1).to_vector<func_type>());
         partial_denom_2[i % num_partitions] += aie::reduce_add(aie::mul(vec_2, vec_2).to_vector<func_type>());
 
-        printf("loop: %d\n", i);
+        //printf("loop: %d\n", i);
     }
 
     unsigned long long int num = 0; 

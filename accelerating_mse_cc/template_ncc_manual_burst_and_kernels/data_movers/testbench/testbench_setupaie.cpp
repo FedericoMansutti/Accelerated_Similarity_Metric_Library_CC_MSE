@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
 
 
     int size = 512;
-    int depth = 1;
+    int depth = 128;
 
     size *= depth;
     int loop_size = size/read_size;
