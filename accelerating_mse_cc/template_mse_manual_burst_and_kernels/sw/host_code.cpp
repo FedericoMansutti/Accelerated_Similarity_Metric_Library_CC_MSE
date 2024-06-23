@@ -31,6 +31,7 @@ SOFTWARE.
 #include "experimental/xrt_kernel.h"
 #include "experimental/xrt_uuid.h"
 #include "../common/common.h"
+#include <cmath>
 
 // For hw emulation, run in sw directory: source ./setup_emu.sh -s on
 
