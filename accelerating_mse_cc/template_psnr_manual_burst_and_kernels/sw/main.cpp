@@ -58,14 +58,24 @@ std::ostream& bold_off(std::ostream& os);
 int main(int argc, char *argv[]) {
     int size1, size2;
     int output_size = 4;
+    int w1, w2, h1, h2, d1, d2;
 
     std::ifstream file_1;
     std::ifstream file_2;
     file_1.open("../../../img_ref.txt");
     file_2.open("../../../img_float.txt");
 
-    file_1 >> size1;
-    file_2 >> size2;
+    file_1 >> w1;
+    file_2 >> w2;
+
+    file_1 >> h1;
+    file_2 >> h2;
+
+    file_1 >> d1;
+    file_2 >> d2;
+
+    size1 = w1 * h1 * d1;
+    size2 = w2 * h2 * d2;
 
     uint8_t* img_ref = new uint8_t[size1];
     uint8_t* img_float = new uint8_t[size2];

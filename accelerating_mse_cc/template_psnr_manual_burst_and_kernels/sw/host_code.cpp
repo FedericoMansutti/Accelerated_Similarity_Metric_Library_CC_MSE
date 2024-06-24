@@ -73,7 +73,7 @@ int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
     float psnr = from_mse_to_psnr(mse);
     end = std::chrono::high_resolution_clock::now();
     time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    std::cout << "SW Time Taken: " << time.count() << " ns, ";
+    std::cout << "SW Time Taken: " << time.count() << " ns (value: " << psnr << "), ";
     if (abs(psnr - output[0]) / psnr > 0.01){
         std::cout << "Error for PSNR --> expected: " << psnr << " got:  " << output[0] << std::endl;
         return EXIT_FAILURE;
@@ -85,8 +85,8 @@ int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
 int main(int argc, char *argv[]) {
     int size1 = 512 * 512;
     int size2 = 512 * 512;
-    int depth1 = 100;
-    int depth2 = 100;
+    int depth1 = 10;
+    int depth2 = 10;
     int output_size = 4;
 
     size1 = size1 * depth1;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
 
     float output_buffer[output_size];
 
-    int num_tests = 5;
+    int num_tests = 10;
     float sum_hw = 0;
     float sum_squared_hw = 0;
     float sum_sw = 0;
