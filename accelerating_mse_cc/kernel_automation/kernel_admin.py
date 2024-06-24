@@ -3,6 +3,7 @@ import os
 import argparse
 from kernel_1_automation import generate_kernel_code
 from graph_automation import create_graph
+from setup_aie_automation import setup_aie
 
 def copy_directory(src, dst):
     """
@@ -34,6 +35,7 @@ def main():
     files_to_overwrite = {
         'aie/src/graph.h': create_graph(kernel_count),
         'aie/src/my_kernel_1.cpp': generate_kernel_code(kernel_count),
+        'data_movers/setup_aie.cpp': setup_aie(kernel_count),
         # Add more files as needed
     }
 
