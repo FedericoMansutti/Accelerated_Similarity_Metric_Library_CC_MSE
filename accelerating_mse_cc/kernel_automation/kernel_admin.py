@@ -1,10 +1,11 @@
 import shutil
 import os
 import argparse
-from kernel_1_automation import generate_kernel_code
+from kernel_1_automation import create_kernel, create_kernel_header
 from graph_automation import create_graph
 from setup_aie_automation import setup_aie
 from testbench_sink_from_aie import test_sink_from_aie
+from testbench_setup import create_testbench_setup
 
 def copy_directory(src, dst):
     """
@@ -35,7 +36,9 @@ def main():
     # Example: Dictionary of files to overwrite with their new content
     files_to_overwrite = {
         'aie/src/graph.h': create_graph(kernel_count),
-        'aie/src/my_kernel_1.cpp': generate_kernel_code(kernel_count),
+        'aie/src/my_kernel_1.cpp': create_kernel(kernel_count),
+        'aie/src/my_kernel_1.h': create_kernel_header(kernel_count),
+        'data_movers/testbench/testbench_setupaie.cpp': create_testbench_setup(kernel_count),
         'data_movers/setup_aie.cpp': setup_aie(kernel_count),
         'data_movers/testbench/testbench_sink_from_aie.cpp': test_sink_from_aie(kernel_count),
         # Add more files as needed

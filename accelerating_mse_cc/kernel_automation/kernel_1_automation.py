@@ -1,4 +1,4 @@
-def generate_kernel_code(kernel_count):
+def create_kernel(kernel_count):
     preamble = '''#include "my_kernel_1.h"
 #include "common.h"
 #include "aie_api/aie.hpp"
@@ -107,4 +107,30 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
     full_code = preamble + '\n' + sum_kernels_function
 
     return full_code
+
+
+def create_kernel_header(kernel_count):
+    # Define the initial part of the header
+    header = """#pragma once
+#include <adf.h>
+
+#define stream_type float
+
+#define read_type uint8 // type of the input stream
+#define write_type float // type of the output stream
+
+void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream<read_type>* restrict input_2, output_stream<write_type>* restrict output);
+"""
+
+    # Start the sum_kernels function
+    header += "\nvoid sum_kernels ("
+
+    # Add input streams based on the number of kernels
+    for i in range(1, kernel_count + 1):
+        header += f"input_stream<float>* restrict kernel_{i}, "
+
+    # Add the output stream and close the function declaration
+    header += "output_stream<write_type>* restrict output);\n"
+
+    return header
 
