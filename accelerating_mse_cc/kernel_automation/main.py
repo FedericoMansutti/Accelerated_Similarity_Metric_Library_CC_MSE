@@ -1,4 +1,5 @@
 import shutil
+from time import sleep
 import os
 import argparse
 from kernel_automation import create_kernel, create_kernel_header
@@ -51,6 +52,12 @@ def main():
 
     # Step 2: Overwrite the content of specific files
     overwrite_files(f"../template_{metric}_{kernel_count}_kernels", files_to_overwrite)
+
+    sleep(0.25)
+    # finally, remove the files that we don't want to be copied in the new template
+    os.system(f"rm -rf ../template_{metric}_{kernel_count}_kernels/aie/data/*")
+    os.system(f"rm -rf ../template_{metric}_{kernel_count}_kernels/hw/overlay_hw.xclbin")
+    os.system(f"rm -rf ../template_{metric}_{kernel_count}_kernels/hw/overlay_hw_emu.xclbin")
 
 if __name__ == "__main__":
     main()
