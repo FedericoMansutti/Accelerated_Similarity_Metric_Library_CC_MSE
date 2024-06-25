@@ -128,7 +128,7 @@ extern "C" {
 \tstart = burst_length * burst_count;
 \tinput_1.read_request(start, remainder);
 \tinput_2.read_request(start, remainder);
-\tfor (int j = 0; j < remainder/kernel_count; j++){
+\tfor (int i = 0; i < remainder/kernel_count; i++){
 \t\t#pragma HLS PIPELINE UNROLL
 '''
     remainder_read = []
@@ -142,7 +142,7 @@ extern "C" {
         remainder_write.append(f'\t\ts_{j}.write((stream_type) buf_{j}[i]);')
     remainder_write = '\n'.join(remainder_write)
     
-    remainder_processing += f'{remainder_read}\n\tfor (int j = 0; j < remainder/kernel_count; j++){{\n{remainder_write}\n\t}}\n}}\n}}\n'
+    remainder_processing += f'{remainder_read}\n\tfor (int i = 0; i < remainder/kernel_count; i++){{\n{remainder_write}\n\t}}\n}}\n}}\n'
     
     # Combine all parts
     cpp_code = includes + func_def + interface_pragmas + size_vars + stream_writes + buffer_declarations + loop_vars + burst_loop + remainder_processing
