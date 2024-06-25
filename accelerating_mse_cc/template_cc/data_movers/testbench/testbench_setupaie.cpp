@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 
 
     int size = 512;
-    int depth = 128;
+    int depth = 1;
 
     size *= depth;
     int loop_size = size/read_size;
@@ -198,7 +198,7 @@ int main(int argc, char* argv[]) {
         }
 
 
-        std::cout << "\n\n end \n\n";
+        std::cout << "\n\nend \n\n";
 
         file_1.close();
         file_2.close();

@@ -15,7 +15,17 @@
 //API REFERENCE for STREAM: 
 // https://docs.amd.com/r/ehttps://docs.amd.com/r/en-US/ug1079-ai-engine-kernel-coding/Reading-and-Advancing-an-Input-Streamn-US/ug1079-ai-engine-kernel-coding/Reading-and-Advancing-an-Input-Stream
 
-void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream<read_type>* restrict input_2, output_stream<write_type>* restrict output) {
+void split(unsigned long long int original, int &high, int &low) {
+    high = static_cast<int>(original >> 32); // Get the higher 32 bits
+    low = static_cast<int>(original & 0xFFFFFFFF); // Get the lower 32 bits
+}
+
+unsigned long long int recompose(int high, int low) {
+    // recompose in a single unsigned long long int
+    return (static_cast<unsigned long long int>(high) << 32) | (static_cast<unsigned long long int>(low) & 0xFFFFFFFF);
+}
+
+void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream<read_type>* restrict input_2, output_stream<int>* restrict output) {
     aie::vector<read_type, vector_size/2> size_vec1 = readincr_v<vector_size/2>(input_1);
     aie::vector<read_type, vector_size/2> size_vec2 = readincr_v<vector_size/2>(input_2);
 
@@ -75,19 +85,36 @@ void my_kernel_function (input_stream<read_type>* restrict input_1, input_stream
         denom_1 += partial_denom_1[i];
         denom_2 += partial_denom_2[i];
     }
-    float res = (float) (num * num) / (denom_1 * denom_2);
+    //float res = (float) (num * num) / (denom_1 * denom_2);
     // pass the this result to the final kernel
-    aie::vector<write_type, 4> cc;
-    printf("\nkernel cc: %f\n", res);
-    cc.set(res, 0);
+    int high, low;
+
+    aie::vector<int, 8> cc;
+    split(num, high, low);
+    cc.set(high, 0);
+    cc.set(low, 1);
+
+    split(denom_1, high, low);
+    cc.set(high, 2);
+    cc.set(low, 3);
+
+    split(denom_2, high, low);
+    cc.set(high, 4);
+    cc.set(low, 5);
+
     writeincr(output, cc);
 }
 
-void sum_kernels (input_stream<write_type>* restrict kernel_1, input_stream<write_type>* restrict kernel_2, output_stream<float>* restrict output){
-    float k1 = readincr_v<4>(kernel_1)[0];
-    float k2 = readincr_v<4>(kernel_2)[0];
+void sum_kernels (input_stream<int>* restrict kernel_1, input_stream<int>* restrict kernel_2, output_stream<write_type>* restrict output){
+    aie::vector<int, 8> k1 = readincr_v<8>(kernel_1);
+    aie::vector<int, 8> k2 = readincr_v<8>(kernel_2);
     // put all the partial metrics togheter, and obtain the real metric
-    float res = (k1 + k2) / 2;
+
+    unsigned long long int num = recompose(k1[0], k1[1]) + recompose(k2[0], k2[1]);
+    unsigned long long int denom_1 = recompose(k1[2], k1[3]) + recompose(k2[2], k2[3]);
+    unsigned long long int denom_2 = recompose(k1[4], k1[5]) + recompose(k2[4], k2[5]);
+
+    float res = (float) (num * num) / (denom_1 * denom_2);
 
     aie::vector<float, 4> cc;
     cc.set(res , 0);
