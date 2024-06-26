@@ -1,0 +1,44 @@
+{
+    "schema_version": {
+        "major": "1",
+        "minor": "3",
+        "patch": "0"
+    },
+    "generation": {
+        "this_file": "/home/users/davide.ettori/Desktop/templates_HPPS/versal_accelerating_mse_cc/accelerating_mse_cc/template_rmse/aie/x86simulator_output/x86sim.aierun_summary",
+        "source": "x86sim",
+        "PID": "3395989",
+        "timestamp": "1719394278001"
+    },
+    "command_step": {
+        "command": "x86simulator --pkg-dir=./Work",
+        "cwd": "/home/users/davide.ettori/Desktop/templates_HPPS/versal_accelerating_mse_cc/accelerating_mse_cc/template_rmse/aie"
+    },
+    "files": [
+        {
+            "name": "/home/users/davide.ettori/Desktop/templates_HPPS/versal_accelerating_mse_cc/accelerating_mse_cc/template_rmse/aie/./Work/temp/graph.json",
+            "type": "AIE_GRAPH",
+            "format": "JSON"
+        },
+        {
+            "name": "data/out_plio_sink_1.txt",
+            "type": "SIMULATOR_OUTPUT",
+            "format": "TEXT",
+            "node_name": "i7_pi0"
+        },
+        {
+            "name": "/home/users/davide.ettori/Desktop/templates_HPPS/versal_accelerating_mse_cc/accelerating_mse_cc/template_rmse/aie/./Work",
+            "type": "AIE_COMPILER_WORKDIR",
+            "format": "DIR"
+        },
+        {
+            "name": "x86simulator.log",
+            "type": "RUN_LOG",
+            "format": "TEXT"
+        }
+    ],
+    "run_status": {
+        "state": "CS_PASSED",
+        "timestamp": "1719394278472"
+    }
+}

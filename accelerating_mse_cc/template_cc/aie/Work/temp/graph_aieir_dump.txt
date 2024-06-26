@@ -1,0 +1,104 @@
+Module {
+   def subgraph root {
+      node definitions {
+         def plio b2 iotype:stream to stream {
+             ports {
+               port po0 dir:out porttype:stream elttype:strm<uint8>
+            }
+         }
+         def plio b3 iotype:stream to stream {
+             ports {
+               port po0 dir:out porttype:stream elttype:strm<uint8>
+            }
+         }
+         def plio b4 iotype:stream to stream {
+             ports {
+               port po0 dir:out porttype:stream elttype:strm<uint8>
+            }
+         }
+         def plio b5 iotype:stream to stream {
+             ports {
+               port po0 dir:out porttype:stream elttype:strm<uint8>
+            }
+         }
+         def plio b6 iotype:stream to stream {
+             ports {
+               port pi0 dir:in porttype:stream elttype:strm<float>
+            }
+         }
+         def aiekernel b0 {
+            ports {
+               port pi0 dir:in porttype:streamvariable name: input_1 elttype:strm<uint8>
+               port pi1 dir:in porttype:streamvariable name: input_2 elttype:strm<uint8>
+               port po0 dir:out porttype:streamvariable name: output elttype:strm<int32>
+            }
+            kernel: my_kernel_function
+            headers : {
+               src/my_kernel_1.h
+               ../common/common.h
+            }
+            srcs:{
+               src/my_kernel_1.cpp
+            }
+         }
+         def aiekernel b1 {
+            ports {
+               port pi0 dir:in porttype:streamvariable name: kernel_1 elttype:strm<int32>
+               port pi1 dir:in porttype:streamvariable name: kernel_2 elttype:strm<int32>
+               port po0 dir:out porttype:streamvariable name: output elttype:strm<float>
+            }
+            kernel: sum_kernels
+            headers : {
+               src/my_kernel_1.h
+               ../common/common.h
+            }
+            srcs:{
+               src/my_kernel_1.cpp
+            }
+         }
+      }
+      nodes: {
+         me  i0:b0 runtime:0.8999 {
+            portinst: i0_pi0 idx[0] datatype:strm<uint8> stream in bw_utlization = 1 (variable name:  my_kernel_1.in[0])
+            portinst: i0_pi1 idx[1] datatype:strm<uint8> stream in bw_utlization = 1 (variable name:  my_kernel_1.in[1])
+            portinst: i0_po0 idx[2] datatype:strm<int32> stream out bw_utlization = 1 (variable name:  my_kernel_1.out[0])
+         }
+         me  i1:b0 runtime:0.8999 {
+            portinst: i1_pi0 idx[0] datatype:strm<uint8> stream in bw_utlization = 1 (variable name:  my_kernel_2.in[0])
+            portinst: i1_pi1 idx[1] datatype:strm<uint8> stream in bw_utlization = 1 (variable name:  my_kernel_2.in[1])
+            portinst: i1_po0 idx[2] datatype:strm<int32> stream out bw_utlization = 1 (variable name:  my_kernel_2.out[0])
+         }
+         me  i2:b1 runtime:0.8999 {
+            portinst: i2_pi0 idx[0] datatype:strm<int32> stream in bw_utlization = 1 (variable name:  my_kernel_sum.in[0])
+            portinst: i2_pi1 idx[1] datatype:strm<int32> stream in bw_utlization = 1 (variable name:  my_kernel_sum.in[1])
+            portinst: i2_po0 idx[2] datatype:strm<float> stream out bw_utlization = 1 (variable name:  my_kernel_sum.out[0])
+         }
+         plio  nodeinst:i3:b2 {
+            portinst: i3_po0 idx[-1] datatype:strm<uint8> stream out bw_utlization = 1 (variable name:  in_1.out[0])
+         }
+         plio  nodeinst:i4:b3 {
+            portinst: i4_po0 idx[-1] datatype:strm<uint8> stream out bw_utlization = 1 (variable name:  in_2.out[0])
+         }
+         plio  nodeinst:i5:b4 {
+            portinst: i5_po0 idx[-1] datatype:strm<uint8> stream out bw_utlization = 1 (variable name:  in_3.out[0])
+         }
+         plio  nodeinst:i6:b5 {
+            portinst: i6_po0 idx[-1] datatype:strm<uint8> stream out bw_utlization = 1 (variable name:  in_4.out[0])
+         }
+         plio  nodeinst:i7:b6 {
+            portinst: i7_pi0 idx[-1] datatype:strm<float> stream in bw_utlization = 1 (variable name:  out_1.in[0])
+         }
+      }
+      connections:{
+         Channel net0: Single :src:i3_po0 dst:i0_pi0
+         Channel net1: Single :src:i4_po0 dst:i0_pi1
+         Channel net2: Single :src:i5_po0 dst:i1_pi0
+         Channel net3: Single :src:i6_po0 dst:i1_pi1
+         Channel net4: Single :src:i0_po0 dst:i2_pi0
+         Channel net5: Single :src:i1_po0 dst:i2_pi1
+         Channel net6: Single :src:i2_po0 dst:i7_pi0
+      }
+      constraints {
+      }
+   }
+}

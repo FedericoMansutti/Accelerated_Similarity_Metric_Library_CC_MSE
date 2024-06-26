@@ -27,6 +27,7 @@ SOFTWARE.
 #include <hls_math.h>
 #include <ap_axi_sdata.h>
 #include "../common/common.h"
+#include <cmath>
 
 extern "C" {
 // We need 1 input stream, from AIE
@@ -53,5 +54,6 @@ void sink_from_aie(
         float x = input_stream.read();
         output[i] = x;
     }
+    output[0] = sqrt(output[0]) * output[1];
 }
 }

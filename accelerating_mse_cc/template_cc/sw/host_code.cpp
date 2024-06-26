@@ -68,7 +68,7 @@ int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
         denom_1 += input_1[i] * input_1[i];
         denom_2 += input_2[i] * input_2[i];
     }
-    float cc = (float) (num * num) / (denom_1 * denom_2);
+    float cc = (float) (num) / (sqrt(denom_1) * sqrt(denom_2));
     end = std::chrono::high_resolution_clock::now();
     time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
     std::cout << "SW Time Taken: " << time.count() << " ns (value: " << cc << "), ";

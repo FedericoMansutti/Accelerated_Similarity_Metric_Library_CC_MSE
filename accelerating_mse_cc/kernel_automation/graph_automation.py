@@ -70,8 +70,8 @@ public:
 \t\t// set kernel source and headers
 '''
     for j in range(1, kernel_count + 1):
-        kernel_config += ''.join([f'\t\tsource(my_kernel_{j})  = "src/my_kernel_{j}.cpp";\n'])
-        kernel_config += ''.join([f'\t\theaders(my_kernel_{j}) = {{"src/my_kernel_{j}.h","../common/common.h"}};\n'])
+        kernel_config += ''.join([f'\t\tsource(my_kernel_{j})  = "src/my_kernel_1.cpp";\n'])
+        kernel_config += ''.join([f'\t\theaders(my_kernel_{j}) = {{"src/my_kernel_1.h","../common/common.h"}};\n'])
     kernel_config += '''
 \t\tsource(my_kernel_sum)  = "src/my_kernel_1.cpp";
 \t\theaders(my_kernel_sum) = {"src/my_kernel_1.h","../common/common.h"};

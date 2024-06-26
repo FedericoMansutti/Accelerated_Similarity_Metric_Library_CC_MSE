@@ -42,7 +42,7 @@ float cc(int size, float *img_ref, float *img_float){
         denom_1 += img_ref[i] * img_ref[i];
         denom_2 += img_float[i] * img_float[i];
     }
-    return (float) (num * num) / (denom_1 * denom_2);
+    return (float) (num) / (sqrt(denom_1) * sqrt(denom_2));
 }
 
 int main(int argc, char *argv[]) { 

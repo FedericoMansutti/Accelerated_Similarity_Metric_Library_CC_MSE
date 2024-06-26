@@ -115,8 +115,10 @@ void sum_kernels (input_stream<int>* restrict kernel_1, input_stream<int>* restr
     unsigned long long int denom_2 = recompose(k1[4], k1[5]) + recompose(k2[4], k2[5]);
 
     float res = (float) (num * num) / (denom_1 * denom_2);
+    float coeff = (float) 2 * ((int) num >= 0) - 1;
 
     aie::vector<float, 4> cc;
     cc.set(res , 0);
+    cc.set(coeff, 1);
     writeincr(output, cc);
 }
