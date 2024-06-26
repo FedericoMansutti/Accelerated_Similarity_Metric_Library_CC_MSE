@@ -19,13 +19,13 @@ ysis, Computer Vision, and many others. Among these applications,
 image registration stands as pivotal. Employed in medical imaging
 and robotics, it uses similarity metrics to guide the heuristic registra-
 tion algorithm. In this context, Cross-Correlation (CC), Mean Square
-Error (MSE) and Peak Signal-to-Noise Ratio (PSNR) are promis-
-ing, opening to high-performant solutions without significant accu-
-racy drops. This project focuses on tailoring CC, MSE and PSNR
+Error (MSE), Peak Signal-to-Noise Ratio (PSNR), Root Mean Squared Error (RMSE) and Squared Cross-Correlation (SCC)
+are promising, opening to high-performant solutions without significant accu-
+racy drops. This project focuses on tailoring CC, MSE, PSNR, RMSE and SCC
 procedures to unleash the benefits of cutting-edge Versal technologies.
-While CC, MSE and PSNR have been implemented with varying de-
+While those metrics have been implemented with varying de-
 gree of success on FPGA architectures, this is the first implementation,
-to the best of our knowledge, of MSE, CC and PSNR acceleration on
+to the best of our knowledge, of MSE, CC, PSNR, RMSE and SCC acceleration on
 a Versal machine with AI Engine. We present an AI Engine-based li-
 brary for Similarity Metric Computation (AIESMC) for both 2D and
 3D images. AIESMC is able to generate various accelerators, letting
@@ -48,7 +48,7 @@ step 1:
 step 2:
     enter in the 'accelerating_mse_cc', which is the root, and open a terminal from here. All the commands below must be run from a terminal inside this folder
 step 3:
-    choose the matric (MSE, CC, PSNR) and the number of kernels (1, 2) you want the accelarator to use
+    choose the matric (MSE, CC, PSNR, RMSE, SCC) and the number of kernels (1, 2) you want the accelarator to use. Then source Vitis from your local path
 step 4:
     type 'python3 kernel_automation/main.py mse 2' for creating the accelarator for MSE with 2 kernels (same pattern for other combinations)
 step 5:

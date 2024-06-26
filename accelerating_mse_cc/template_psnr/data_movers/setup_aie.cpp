@@ -134,7 +134,7 @@ hls::stream<stream_type>& s_3, hls::stream<stream_type>& s_4) {
 	start = burst_length * burst_count;
 	input_1.read_request(start, remainder);
 	input_2.read_request(start, remainder);
-	for (int j = 0; j < remainder/kernel_count; j++)
+	for (int j = 0; j < remainder/kernel_count; j++){
 	// write the size of the image into an ap int
 		#pragma HLS PIPELINE UNROLL
 		buf_1[j] = input_1.read();
