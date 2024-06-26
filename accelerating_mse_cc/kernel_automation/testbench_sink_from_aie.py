@@ -1,5 +1,5 @@
 def test_sink_from_aie(kernel_count, metric):
-    if metric not in ["mse", "cc", "psnr"]:
+    if metric not in ["mse", "cc", "psnr", "scc", "rmse"]:
         print("You chose an invalid metric: " + metric)
         return
     if metric == "mse":
@@ -7,7 +7,7 @@ def test_sink_from_aie(kernel_count, metric):
     elif metric == "psnr":
         return build_psnr(kernel_count)
     elif metric == "rmse":
-        return build_psnr(kernel_count)
+        return build_rmse(kernel_count)
     elif metric == "scc":
         return build_scc(kernel_count)
     else:
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
 
     return cpp_code
 
-def build_mse(kernel_count):
+def build_rmse(kernel_count):
     # Original code parts
     includes = '''#include <unistd.h>
 #include <sys/stat.h>
@@ -443,7 +443,7 @@ int main(int argc, char *argv[]) {
 
     return cpp_code
 
-def build_cc(kernel_count):
+def build_scc(kernel_count):
         # Original code parts
     includes = '''#include <unistd.h>
 #include <sys/stat.h>

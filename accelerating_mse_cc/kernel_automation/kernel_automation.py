@@ -6,7 +6,7 @@ def create_kernel(kernel_count, metric):
     elif metric == "scc":
         return create_kernel_scc(kernel_count)
     else:
-        return create_kernel_cc
+        return create_kernel_cc(kernel_count)
 
 def create_kernel_mse(kernel_count):
     preamble = '''#include "my_kernel_1.h"
