@@ -2,12 +2,12 @@ import shutil
 from time import sleep
 import os
 import argparse
-from kernel_automation import create_kernel, create_kernel_header
-from graph_automation import create_graph
-from setup_aie_automation import setup_aie
-from testbench_sink_from_aie import test_sink_from_aie
-from testbench_setup import create_testbench_setup
-from cfg_automation import build_cfg
+from automation.kernel_automation import create_kernel, create_kernel_header
+from automation.graph_automation import create_graph
+from automation.setup_aie_automation import setup_aie
+from automation.testbench_sink_from_aie import test_sink_from_aie
+from automation.testbench_setup import create_testbench_setup
+from automation.cfg_automation import build_cfg
 
 def copy_directory(src, dst):
     """
