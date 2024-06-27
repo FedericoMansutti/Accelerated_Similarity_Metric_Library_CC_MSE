@@ -46,7 +46,7 @@ To use this library you have to:
 step 1:
     download all the files from github, typing 'git clone https://github.com/FedericoMansutti/versal_accelerating_mse_cc.git' from a termial inside a folder of your choice
 step 2:
-    enter in the 'accelerating_mse_cc', which is the root, and open a terminal from here. All the commands below must be run from a terminal inside this folder
+    enter in this folder, which is the root, and open a terminal from here. All the commands below must be run from a terminal inside this folder
 step 3:
     choose the matric (MSE, CC, PSNR, RMSE, SCC) and the number of kernels (1, 2) you want the accelarator to use. Then source Vitis from your local path
 step 4:
