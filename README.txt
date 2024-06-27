@@ -38,7 +38,7 @@ Description of archive (explain directory structure, documents and source files)
 the folder 'accelerating_mse_cc' is the root folder and it will contain all the templates. Each template has an 'aie' folder containing the code for the AI Engine, a 'data_movers' folder containing the code for the Programmable Logic part, a 'hw' folder containing the bitstreams and a 'sw' folder containing the host code in cpp.
 the 'launch.py' file and the 'kernel_automation' folder contains the automation part, in python, which will be explained later on
 the 'img_ref.txt' and 'img_float.txt' files contains the 2 images which must be comapred for calculating the metric
-finally, there are some 'setup_all.sh' files, which are needed to source Vitis from your local path
+finally, there are some 'setup_all.sh' files, which are needed to source Vitis from your local path.
 
 
 The base templates, already provided, are compiled for both HW and HW_EMU and they have the bitstreams inside the hw folder. If you want to run the basic templates you can skip steps from 3 to 7
