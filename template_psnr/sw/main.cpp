@@ -56,14 +56,19 @@ std::ostream& bold_on(std::ostream& os);
 std::ostream& bold_off(std::ostream& os);
 
 int main(int argc, char *argv[]) {
+    std::cout << "\n\n\nSTARTING THE ACCELERATOR\n\n\n";
     int size1, size2;
     int output_size = 4;
     int w1, w2, h1, h2, d1, d2;
 
     std::ifstream file_1;
     std::ifstream file_2;
-    file_1.open("../../../img_ref.txt");
-    file_2.open("../../../img_float.txt");
+    std::cout << "\nOpening input files ... ";
+    file_1.open("../../img_ref.txt");
+    file_2.open("../../img_float.txt");
+    std::cout << "Done";
+
+    std::cout << "\nReading the image size from input files ... ";
 
     file_1 >> w1;
     file_2 >> w2;
@@ -77,15 +82,18 @@ int main(int argc, char *argv[]) {
     size1 = w1 * h1 * d1;
     size2 = w2 * h2 * d2;
 
+    std::cout << "Done";
+
     uint8_t* img_ref = new uint8_t[size1];
     uint8_t* img_float = new uint8_t[size2];
-
+    std::cout << "\nReading the pixels of images from input files ... ";
     for (int i = 0; i < size1; i++){
         file_1 >> img_ref[i]; 
     }
     for (int i = 0; i < size2; i++){
         file_2 >> img_float[i]; 
     }
+    std::cout << "Done\n\n";
 
 //------------------------------------------------LOADING XCLBIN------------------------------------------    
     std::string xclbin_file;
@@ -93,16 +101,19 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
 
     // Load xclbin
-    std::cout << "1. Loading bitstream (" << xclbin_file << ")... ";
+    std::cout << "\n1. Loading bitstream (" << xclbin_file << ")... ";
     xrt::device device = xrt::device(DEVICE_ID);
     xrt::uuid xclbin_uuid = device.load_xclbin(xclbin_file);
     std::cout << "Done" << std::endl;
 //----------------------------------------------INITIALIZING THE BOARD------------------------------------------
 
     // create kernel objects
+    std::cout << "\nSetting up the PL ... ";
     xrt::kernel krnl_setup_aie  = xrt::kernel(device, xclbin_uuid, "setup_aie");
     xrt::kernel krnl_sink_from_aie  = xrt::kernel(device, xclbin_uuid, "sink_from_aie");
+    std::cout << "Done";
 
+    std::cout << "\nSetting up the Versal memory ... ";
     // get memory bank groups for device buffer - required for axi master input/ouput
     xrtMemoryGroup bank_output  = krnl_sink_from_aie.group_id(arg_sink_from_aie_output);
     xrtMemoryGroup bank_input_1  = krnl_setup_aie.group_id(arg_setup_aie_input_1);
@@ -112,6 +123,7 @@ int main(int argc, char *argv[]) {
     xrt::bo buffer_setup_aie_1 = xrt::bo(device, size1 * sizeof(uint8_t), xrt::bo::flags::normal, bank_input_1);
     xrt::bo buffer_setup_aie_2 = xrt::bo(device, size2 * sizeof(uint8_t), xrt::bo::flags::normal, bank_input_2); 
     xrt::bo buffer_sink_from_aie = xrt::bo(device, output_size * sizeof(float), xrt::bo::flags::normal, bank_output); 
+    std::cout << "Done";
 
     // create runner instances
     xrt::run run_setup_aie = xrt::run(krnl_setup_aie);
@@ -129,25 +141,31 @@ int main(int argc, char *argv[]) {
 
     float output_buffer[output_size];
     // write data into the input buffer
+    std::cout << "\nWriting the images into the Versal  ... ";
     buffer_setup_aie_1.write(img_ref);
     buffer_setup_aie_1.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
     buffer_setup_aie_2.write(img_float);
     buffer_setup_aie_2.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+    std::cout << "Done";
 
     // run the kernel
+    std::cout << "\nComputing the metric ... ";
     run_sink_from_aie.start();
     run_setup_aie.start();
 
     // wait for the kernel to finish
     run_setup_aie.wait();
     run_sink_from_aie.wait();
+    std::cout << "Done";
 
+    std::cout << "\nTransferring the output from the Versal ... ";
     // read the output buffer
     buffer_sink_from_aie.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
     buffer_sink_from_aie.read(output_buffer);
+    std::cout << "Done";
 
-    std::cout << "\n\nThe value of the PSNR between the img_ref.txt and img_float.txt is --> " << (float) output_buffer[0]  << "\n";
+    std::cout << "\n\nThe value of the PSNR between the img_ref.txt and img_float.txt is --> " << (float) output_buffer[0]  << "\n\n";
 
     return EXIT_SUCCESS;
 }
