@@ -44,7 +44,7 @@ To use this library, follow these steps:
 3. Choose the metric (MSE, CC, PSNR, RMSE, SCC) and the number of kernels (1, 2) you want the accelerator to use. Then source Vitis from your local path.
 4. Type:
     ```sh
-    python3 kernel_automation/main.py mse 2
+    python3 main.py mse 2
     ```
    This creates the accelerator for MSE with 2 kernels (use the same pattern for other combinations).
 5. Check that a folder named `template_{metric chosen}_{number of kernel chosen}_kernels` has been created in the root folder.
@@ -64,18 +64,18 @@ To use this library, follow these steps:
 8. Fill the files `img_ref.txt` and `img_float.txt` with the reference image and floating image. You can provide any size (2D or 3D) at the start of the files using width, height, and depth. They are already filled with a clear example.
 9. Once the compilation is finished, type:
     ```sh
-    python3 launch.py {metric chosen}_{number of kernel chosen}_kernels run_hw
+    python3 launch.py run_hw {metric chosen}_{number of kernel chosen}_kernels
     ```
    or
     ```sh
-    python3 launch.py {metric chosen}_{number of kernel chosen}_kernels run_hw_emu
+    python3 launch.py run_hw_emu {metric chosen}_{number of kernel chosen}_kernels
     ```
    For example:
     ```sh
-    python3 launch.py mse_2_kernels run_hw
+    python3 launch.py run_hw mse_2_kernels
     ```
 10. The resulting metric computed by the AI Engine accelerator will be shown in the terminal.
 
     ```
-    In the example, it should be `python3 launch.py mse_2_kernels run_hw`.
+    In the example, it should be `python3 launch.py run_hw mse_2_kernels`.
 10. **View the resulting metric** computed by the AI Engine accelerator, which will be shown in the terminal.
