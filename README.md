@@ -41,15 +41,15 @@ To use this library, follow these steps:
     git clone https://github.com/FedericoMansutti/Accelerated_Similarity_Metric_Library_CC_MSE
     ```
 2. Enter this folder, which is the root, and open a terminal from here. All the commands below must be run from a terminal inside this folder.
-3. Choose the metric (MSE, CC, PSNR, RMSE, SCC) and the number of kernels (1, 2) you want the accelerator to use. Then source Vitis from your local path.
-4. You can choose to launch the bitstreams already loaded in the hw folders in the base templates. If so skip to step 7. Otherwise, type:
+3. Choose the metric (MSE, CC, PSNR, RMSE, SCC) and the number of kernels (1, 2) you want the accelerator to use. Then source Vitis from your local path (cpp and python if needed).
+5. You can choose to launch the bitstreams already loaded in the hw folders in the base templates. If so skip to step 7. Otherwise, type:
     ```sh
     python3 main.py mse 2
     ```
    This creates the accelerator for MSE with 2 kernels (use the same pattern for other combinations).
-5. Check that a folder named `template_{metric chosen}_{number of kernel chosen}_kernels` has been created in the root folder.
-6. Choose if you want to run in HW, if you have a Versal machine, or in HW_EMU if you don't but still want to test the project. Keep in mind that HW_EMU is not accurate and may give inaccurate metrics.
-7. Compile the bitstreams for HW or HW_EMU by typing:
+6. Check that a folder named `template_{metric chosen}_{number of kernel chosen}_kernels` has been created in the root folder.
+7. Choose if you want to run in HW, if you have a Versal machine, or in HW_EMU if you don't but still want to test the project. Keep in mind that HW_EMU is not accurate and may give inaccurate metrics.
+8. Compile the bitstreams for HW or HW_EMU by typing:
     ```sh
     python3 launch.py compile_hw {metric chosen}_{number of kernel chosen}_kernels
     ```
@@ -61,8 +61,8 @@ To use this library, follow these steps:
     ```sh
     python3 launch.py compile_hw mse_2_kernels
     ```
-8. Fill the files `img_ref.txt` and `img_float.txt` with the reference image and floating image. You can provide any size (2D or 3D) at the start of the files using width, height, and depth. They are already filled with a clear example.
-9. Once the compilation is finished, type:
+9. Fill the files `img_ref.txt` and `img_float.txt` with the reference image and floating image. You can provide any size (2D or 3D) at the start of the files using width, height, and depth. They are already filled with a clear example.
+10. Once the compilation is finished, type:
     ```sh
     python3 launch.py run_hw {metric chosen}_{number of kernel chosen}_kernels
     ```
@@ -74,4 +74,4 @@ To use this library, follow these steps:
     ```sh
     python3 launch.py run_hw mse_2_kernels
     ```
-10. **View the resulting metric** computed by the AI Engine accelerator, which will be shown in the terminal.
+11. **View the resulting metric** computed by the AI Engine accelerator, which will be shown in the terminal.
