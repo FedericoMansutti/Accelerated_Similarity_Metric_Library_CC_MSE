@@ -42,13 +42,14 @@ To use this library, follow these steps:
     ```
 2. Enter this folder, which is the root, and open a terminal from here. All the commands below must be run from a terminal inside this folder.
 3. Choose the metric (MSE, CC, PSNR, RMSE, SCC) and the number of kernels (1, 2) you want the accelerator to use. Then source Vitis from your local path.
-4. Type:
+4.  You can choose to launch the bitstreams already loaded in the hw folders in the base templates. If so skip to step 7. Otherwise:
+Type:
     ```sh
     python3 main.py mse 2
     ```
    This creates the accelerator for MSE with 2 kernels (use the same pattern for other combinations).
 5. Check that a folder named `template_{metric chosen}_{number of kernel chosen}_kernels` has been created in the root folder.
-6. Choose if you want to run in HW, if you have a Versal machine, or in HW_EMU if you don't but still want to test the project.
+6. Choose if you want to run in HW, if you have a Versal machine, or in HW_EMU if you don't but still want to test the project. Keep in mind that HW_EMU is not accurate and may give inaccurate metrics.
 7. Compile the bitstreams for HW or HW_EMU by typing:
     ```sh
     python3 launch.py compile_hw {metric chosen}_{number of kernel chosen}_kernels
