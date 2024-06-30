@@ -42,8 +42,7 @@ To use this library, follow these steps:
     ```
 2. Enter this folder, which is the root, and open a terminal from here. All the commands below must be run from a terminal inside this folder.
 3. Choose the metric (MSE, CC, PSNR, RMSE, SCC) and the number of kernels (1, 2) you want the accelerator to use. Then source Vitis from your local path.
-4.  You can choose to launch the bitstreams already loaded in the hw folders in the base templates. If so skip to step 7. Otherwise:
-Type:
+4.  You can choose to launch the bitstreams already loaded in the hw folders in the base templates. If so skip to step 7. Otherwise, type:
     ```sh
     python3 main.py mse 2
     ```
