@@ -31,6 +31,7 @@ SOFTWARE.
 #include "experimental/xrt_kernel.h"
 #include "experimental/xrt_uuid.h"
 #include "../common/common.h"
+#include <cmath>
 
 // For hw emulation, run in sw directory: source ./setup_emu.sh -s on
 
@@ -55,45 +56,42 @@ bool get_xclbin_path(std::string& xclbin_file);
 std::ostream& bold_on(std::ostream& os);
 std::ostream& bold_off(std::ostream& os);
 
+int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
+    std::chrono::high_resolution_clock::time_point start, end;
+    std::chrono::nanoseconds time;
+    start = std::chrono::high_resolution_clock::now();
+    unsigned long long int num = 0;
+    unsigned long long int denom_1 = 0;
+    unsigned long long int denom_2 = 0;
+    for (int i = 0; i < size; i++){
+        num += input_1[i] * input_2[i];
+        denom_1 += input_1[i] * input_1[i];
+        denom_2 += input_2[i] * input_2[i];
+    }
+    float scc = (float) (num * num) / (denom_1 * denom_2);
+    end = std::chrono::high_resolution_clock::now();
+    time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+    std::cout << "SW Time Taken: " << time.count() << " ns (value: " << scc << "), ";
+    if (abs(scc - output[0]) > 0.01){
+        std::cout << "Error for SCC --> expected: " << scc << " got:  " << output[0] << std::endl;
+        return EXIT_FAILURE;
+    }
+    std::cout << "Test passed!" << std::endl;
+    return EXIT_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
-    std::cout << "\n\n\nSTARTING THE ACCELERATOR\n\n\n";
-    int size1, size2;
+    int size1 = 512 * 512;
+    int size2 = 512 * 512;
+    int depth1 = 10;
+    int depth2 = 10;
     int output_size = 4;
-    int w1, w2, h1, h2, d1, d2;
 
-    std::ifstream file_1;
-    std::ifstream file_2;
-    std::cout << "\nOpening input files ... ";
-    file_1.open("../../img_ref.txt");
-    file_2.open("../../img_float.txt");
-    std::cout << "Done";
-
-    std::cout << "\nReading the image size from input files ... ";
-
-    file_1 >> w1;
-    file_2 >> w2;
-
-    file_1 >> h1;
-    file_2 >> h2;
-
-    file_1 >> d1;
-    file_2 >> d2;
-
-    size1 = w1 * h1 * d1;
-    size2 = w2 * h2 * d2;
-
-    std::cout << "Done";
+    size1 = size1 * depth1;
+    size2 = size2 * depth2;
 
     uint8_t* img_ref = new uint8_t[size1];
-    uint8_t* img_float = new uint8_t[size2];
-    std::cout << "\nReading the pixels of images from input files ... ";
-    for (int i = 0; i < size1; i++){
-        file_1 >> img_ref[i]; 
-    }
-    for (int i = 0; i < size2; i++){
-        file_2 >> img_float[i]; 
-    }
-    std::cout << "Done\n\n";
+    uint8_t* img_float = new uint8_t[size1];
 
 //------------------------------------------------LOADING XCLBIN------------------------------------------    
     std::string xclbin_file;
@@ -101,19 +99,16 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
 
     // Load xclbin
-    std::cout << "\n1. Loading bitstream (" << xclbin_file << ")... ";
+    std::cout << "1. Loading bitstream (" << xclbin_file << ")... ";
     xrt::device device = xrt::device(DEVICE_ID);
     xrt::uuid xclbin_uuid = device.load_xclbin(xclbin_file);
     std::cout << "Done" << std::endl;
 //----------------------------------------------INITIALIZING THE BOARD------------------------------------------
 
     // create kernel objects
-    std::cout << "\nSetting up the PL ... ";
     xrt::kernel krnl_setup_aie  = xrt::kernel(device, xclbin_uuid, "setup_aie");
     xrt::kernel krnl_sink_from_aie  = xrt::kernel(device, xclbin_uuid, "sink_from_aie");
-    std::cout << "Done";
 
-    std::cout << "\nSetting up the Versal memory ... ";
     // get memory bank groups for device buffer - required for axi master input/ouput
     xrtMemoryGroup bank_output  = krnl_sink_from_aie.group_id(arg_sink_from_aie_output);
     xrtMemoryGroup bank_input_1  = krnl_setup_aie.group_id(arg_setup_aie_input_1);
@@ -123,7 +118,6 @@ int main(int argc, char *argv[]) {
     xrt::bo buffer_setup_aie_1 = xrt::bo(device, size1 * sizeof(uint8_t), xrt::bo::flags::normal, bank_input_1);
     xrt::bo buffer_setup_aie_2 = xrt::bo(device, size2 * sizeof(uint8_t), xrt::bo::flags::normal, bank_input_2); 
     xrt::bo buffer_sink_from_aie = xrt::bo(device, output_size * sizeof(float), xrt::bo::flags::normal, bank_output); 
-    std::cout << "Done";
 
     // create runner instances
     xrt::run run_setup_aie = xrt::run(krnl_setup_aie);
@@ -140,34 +134,71 @@ int main(int argc, char *argv[]) {
     run_sink_from_aie.set_arg(arg_sink_from_aie_size, output_size);
 
     float output_buffer[output_size];
-    // write data into the input buffer
-    std::cout << "\nWriting the images into the Versal  ... ";
-    buffer_setup_aie_1.write(img_ref);
-    buffer_setup_aie_1.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
-    buffer_setup_aie_2.write(img_float);
-    buffer_setup_aie_2.sync(XCL_BO_SYNC_BO_TO_DEVICE);
-    std::cout << "Done";
+    int num_tests = 10;
+    float sum_hw = 0;
+    float sum_squared_hw = 0;
+    float sum_sw = 0;
+    float sum_squared_sw = 0;
+    int res = EXIT_SUCCESS;
+    std::chrono::high_resolution_clock::time_point start, end;
+    std::chrono::nanoseconds time;
+    for (int j = 0; j < num_tests; j++){
+        for (int i = 0; i < size1; i++){
+            img_ref[i] = rand() % max_pixel_value; 
+        }
+        for (int i = 0; i < size2; i++){
+            img_float[i] = rand() % max_pixel_value; 
+        }
+        // write data into the input buffer
+        buffer_setup_aie_1.write(img_ref);
+        buffer_setup_aie_1.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
-    // run the kernel
-    std::cout << "\nComputing the metric ... ";
-    run_sink_from_aie.start();
-    run_setup_aie.start();
+        buffer_setup_aie_2.write(img_float);
+        buffer_setup_aie_2.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
-    // wait for the kernel to finish
-    run_setup_aie.wait();
-    run_sink_from_aie.wait();
-    std::cout << "Done";
+        // run the kernel
+        run_sink_from_aie.start();
+        run_setup_aie.start();
+        start = std::chrono::high_resolution_clock::now();
 
-    std::cout << "\nTransferring the output from the Versal ... ";
-    // read the output buffer
-    buffer_sink_from_aie.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-    buffer_sink_from_aie.read(output_buffer);
-    std::cout << "Done";
+        // wait for the kernel to finish
+        run_setup_aie.wait();
+        run_sink_from_aie.wait();
+        end = std::chrono::high_resolution_clock::now();
 
-    std::cout << "\n\nThe value of the SCC between the img_ref.txt and img_float.txt is --> " << (float) output_buffer[0]  << "\n\n";
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        sum_hw += time.count() / 1000000; // convert to milliseconds 
+        sum_squared_hw += (time.count() / 1000000) * (time.count() / 1000000);
 
-    return EXIT_SUCCESS;
+        // read the output buffer
+        buffer_sink_from_aie.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+        buffer_sink_from_aie.read(output_buffer);
+
+        start = std::chrono::high_resolution_clock::now();
+        std::cout << "\nTest number " << j + 1 << ", HW Time taken: " << time.count() << " ns --> ";
+        if (check_result(img_ref, img_float, output_buffer, size2) == EXIT_FAILURE)
+            res = EXIT_FAILURE;
+        end = std::chrono::high_resolution_clock::now();
+
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        sum_sw += time.count() / 1000000; // convert to milliseconds 
+        sum_squared_sw += (time.count() / 1000000) * (time.count() / 1000000);
+    }
+    // compute the variance as Var(X) = E(X ** 2) - E(X) ** 2
+    std::cout << "\nResults on " << num_tests << " tests: ";
+    std::cout << "\n\nMean HW time: " << sum_hw / num_tests << " milliseconds, HW Standard Deviation: " << sqrt((sum_squared_hw / num_tests) - (sum_hw / num_tests) * (sum_hw / num_tests)) << "\n";
+    std::cout << "Mean SW time: " << sum_sw / num_tests << " milliseconds, SW Standard Deviation: " << sqrt((sum_squared_sw / num_tests) - (sum_sw / num_tests) * (sum_sw / num_tests)) << "\n";
+    std::cout << "\nSpeedUp factor: " << (sum_sw / num_tests) / (sum_hw / num_tests) << "\n";
+    std::cout << "\nF-ratio: " << sqrt((sum_squared_sw / num_tests) - (sum_sw / num_tests) * (sum_sw / num_tests)) / sqrt((sum_squared_hw / num_tests) - (sum_hw / num_tests) * (sum_hw / num_tests)) << "\n\n";
+
+
+
+    // ---------------------------------CONFRONTO PER VERIFICARE L'ERRORE--------------------------------------
+        
+    // Here there should be a code for checking correctness of your application, like a software application
+
+    return res;
 }
 
 
