@@ -54,6 +54,6 @@ void sink_from_aie(
         float x = input_stream.read();
         output[i] = x;
     }
-    output[0] = sqrt(output[0]) * output[1];
+    output[0] = sqrt(output[0]);
 }
 }

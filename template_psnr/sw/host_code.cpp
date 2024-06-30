@@ -64,7 +64,7 @@ int check_result(uint8_t* input_1, uint8_t* input_2, float* output, int size) {
     std::chrono::high_resolution_clock::time_point start, end;
     std::chrono::nanoseconds time;
     start = std::chrono::high_resolution_clock::now();
-    int sum = 0;
+    unsigned long long int sum = 0;
     float mse;
     for (int i = 0; i < size; i++){
         sum += int(input_1[i] - input_2[i]) * int(input_1[i] - input_2[i]);
