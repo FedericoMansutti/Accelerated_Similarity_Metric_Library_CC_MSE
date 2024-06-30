@@ -14,7 +14,7 @@
 - **Link to project repository:** [GitHub Repository](https://github.com/FedericoMansutti/Accelerated_Similarity_Metric_Library_CC_MSE)
 
 ## Board and Software
-**Board used:** versal-vck5000  
+**Board used:** Versal VCK5000 QDMA2022.2
 **Software Version:** Vitis 2022.2  
 
 ## Project Description
