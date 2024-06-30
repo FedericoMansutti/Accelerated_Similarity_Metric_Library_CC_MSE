@@ -51,15 +51,15 @@ To use this library, follow these steps:
 6. Choose if you want to run in HW, if you have a Versal machine, or in HW_EMU if you don't but still want to test the project.
 7. Compile the bitstreams for HW or HW_EMU by typing:
     ```sh
-    python3 launch.py {metric chosen}_{number of kernel chosen}_kernels compile_hw
+    python3 launch.py compile_hw {metric chosen}_{number of kernel chosen}_kernels
     ```
    or
     ```sh
-    python3 launch.py {metric chosen}_{number of kernel chosen}_kernels compile_hw_emu
+    python3 launch.py compile_hw_emu {metric chosen}_{number of kernel chosen}_kernels
     ```
    For example:
     ```sh
-    python3 launch.py mse_2_kernels compile_hw
+    python3 launch.py compile_hw mse_2_kernels
     ```
 8. Fill the files `img_ref.txt` and `img_float.txt` with the reference image and floating image. You can provide any size (2D or 3D) at the start of the files using width, height, and depth. They are already filled with a clear example.
 9. Once the compilation is finished, type:
@@ -70,12 +70,8 @@ To use this library, follow these steps:
     ```sh
     python3 launch.py run_hw_emu {metric chosen}_{number of kernel chosen}_kernels
     ```
-   For example:
+   For the example above:
     ```sh
     python3 launch.py run_hw mse_2_kernels
     ```
-10. The resulting metric computed by the AI Engine accelerator will be shown in the terminal.
-
-    ```
-    In the example, it should be `python3 launch.py run_hw mse_2_kernels`.
 10. **View the resulting metric** computed by the AI Engine accelerator, which will be shown in the terminal.
