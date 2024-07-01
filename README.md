@@ -10,11 +10,11 @@
 **Supervisor e-mail:** davide.conficconi@polimi.it  
 
 ## Links
-- **Link to YouTube Video(s):** [Video Link](https://url)
-- **Link to project repository:** [GitHub Repository](https://github.com/FedericoMansutti/versal_accelerating_mse_cc)
+- **Link to YouTube Video(s):** [Video Link](https://youtu.be/Sh6HkgVwAgA)
+- **Link to project repository:** [GitHub Repository](https://github.com/FedericoMansutti/Accelerated_Similarity_Metric_Library_CC_MSE)
 
 ## Board and Software
-**Board used:** versal-vck5000  
+**Board used:** Versal VCK5000 QDMA2022.2
 **Software Version:** Vitis 2022.2  
 
 ## Project Description
@@ -38,10 +38,10 @@ To use this library, follow these steps:
 
 1. Download all the files from GitHub:
     ```sh
-    git clone https://github.com/FedericoMansutti/versal_accelerating_mse_cc.git
+    git clone https://github.com/FedericoMansutti/Accelerated_Similarity_Metric_Library_CC_MSE
     ```
 2. Enter this folder, which is the root, and open a terminal from here. All the commands below must be run from a terminal inside this folder.
-3. Choose the metric (MSE, CC, PSNR, RMSE, SCC) and the number of kernels (1, 2) you want the accelerator to use. Then source Vitis from your local path.
+3. Choose the metric (MSE, CC, PSNR, RMSE, SCC) and the number of kernels (1, 2) you want the accelerator to use. Then source Vitis from your local path (cpp and python if needed).
 4. You can choose to launch the bitstreams already loaded in the hw folders in the base templates. If so skip to step 7. Otherwise, type:
     ```sh
     python3 main.py mse 2
