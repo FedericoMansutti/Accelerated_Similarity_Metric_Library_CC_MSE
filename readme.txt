@@ -4,19 +4,20 @@ Team Information
 
 Team number: AOHW-321
 Project name: Accelerated Similarity Metric Library - CC & MSE
+Link to YouTube Video(s): Video Link (https://www.youtube.com/watch?v=Sh6HkgVwAgA)
+Link to project repository: GitHub Repository (https://github.com/FedericoMansutti/Accelerated_Similarity_Metric_Library_CC_MSE)
+
+
 University name: Politecnico di Milano
 Participant(s): Davide Ettori, Federico Mansutti
 Email: davide.ettori@mail.polimi.it, federico.mansutti@mail.polimi.it
 Supervisor name: Prof. Davide Conficconi
 Supervisor e-mail: davide.conficconi@polimi.it
 
-Links
 
-Link to YouTube Video(s): Video Link (https://url)
-Link to project repository: GitHub Repository (https://github.com/FedericoMansutti/versal_accelerating_mse_cc)
 Board and Software
 
-Board used: versal-vck5000
+Board used: Versal VCK5000 QDMA2022.2
 Software Version: Vitis 2022.2
 
 Project Description
@@ -43,15 +44,16 @@ To use this library, follow these steps:
 
 1)
 Download all the files from GitHub:
-git clone https://github.com/FedericoMansutti/versal_accelerating_mse_cc.git
+git clone https://github.com/FedericoMansutti/Accelerated_Similarity_Metric_Library_CC_MSE
 
 2)
 Enter this folder, which is the root, and open a terminal from here. All the commands below must be run from a terminal inside this folder.
 
 3)
-Choose the metric (MSE, CC, PSNR, RMSE, SCC) and the number of kernels (1, 2) you want the accelerator to use. Then source Vitis from your local path.
+Choose the metric (MSE, CC, PSNR, RMSE, SCC) and the number of kernels (1, 2) you want the accelerator to use. Then source Vitis from your local path (cpp and python if needed).
 
 4)
+You can choose to launch the bitstreams already loaded in the hw folders in the base templates. If so skip to step 7. Otherwise:
 Type:
 python3 main.py mse 2
 This creates the accelerator for MSE with 2 kernels (use the same pattern for other combinations).
@@ -60,13 +62,13 @@ This creates the accelerator for MSE with 2 kernels (use the same pattern for ot
 Check that a folder named "template_{metric chosen}_{number of kernel chosen}_kernels" has been created in the root folder.
 
 6)
-Choose if you want to run in HW, if you have a Versal machine, or in HW_EMU if you don't but still want to test the project.
+Choose if you want to run in HW, if you have a Versal machine, or in HW_EMU if you don't but still want to test the project. Keep in mind that HW_EMU is not accurate and may give inaccurate metrics.
 
 7)
 Compile the bitstreams for HW or HW_EMU by typing:
-python3 launch.py compile_hw {metric chosen}_{number of kernel chosen}kernels
+python3 launch.py compile_hw {metric chosen}_{number of kernel chosen}_kernels
 or
-python3 launch.py compile_hw_emu {metric chosen}{number of kernel chosen}_kernels
+python3 launch.py compile_hw_emu {metric chosen}_{number of kernel chosen}_kernels
 For example:
 python3 launch.py compile_hw mse_2_kernels
 
@@ -75,9 +77,9 @@ Fill the files "img_ref.txt" and "img_float.txt" with the reference image and fl
 
 9)
 Once the compilation is finished, type:
-python3 launch.py run_hw {metric chosen}_{number of kernel chosen}kernels
+python3 launch.py run_hw {metric chosen}_{number of kernel chosen}_kernels
 or
-python3 launch.py run_hw_emu {metric chosen}{number of kernel chosen}_kernels
+python3 launch.py run_hw_emu {metric chosen}_{number of kernel chosen}_kernels
 For the example above:
 python3 launch.py run_hw mse_2_kernels
 
