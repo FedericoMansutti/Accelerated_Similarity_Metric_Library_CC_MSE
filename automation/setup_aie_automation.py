@@ -111,14 +111,14 @@ extern "C" {
     # Read buffers
     read_buffers = []
     for j in range(0, kernel_count * 2, 2):
-        read_buffers.append(f'\t\t\tbuf_{j+1}[i] = input_1.read();')
-        read_buffers.append(f'\t\t\tbuf_{j+2}[i] = input_2.read();')
+        read_buffers.append(f'\t\t\tbuf_{j+1}[j] = input_1.read();')
+        read_buffers.append(f'\t\t\tbuf_{j+2}[j] = input_2.read();')
     read_buffers = '\n'.join(read_buffers)
 
     # Write streams
     write_streams = []
     for j in range(1, kernel_count * 2 + 1):
-        write_streams.append(f'\t\t\ts_{j}.write((stream_type) buf_{j}[i]);')
+        write_streams.append(f'\t\t\ts_{j}.write((stream_type) buf_{j}[j]);')
     write_streams = '\n'.join(write_streams)
 
     burst_loop += f'{read_buffers}\n\t\t}}\n\t\tfor (int j = 0; j < burst_length/kernel_count; j++){{\n{write_streams}\n\t\t}}\n\t}}\n'
